@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-purple-600 text-yellow-300 font-mono min-h-screen overflow-x-hidden antialiased;
+    /* This uses @apply with standard Tailwind v4 utility classes */
+  }
+}
+
+/* For this check, please ensure ALL other custom CSS is still commented out */
+/* (keyframes, .animate-*, .dropzone.hover, custom-scrollbar, etc.) */
