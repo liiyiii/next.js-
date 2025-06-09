@@ -32,12 +32,6 @@ export default function RootLayout({
         className={`
           ${geistSans.variable}
           ${geistMono.variable}
-          antialiased
-          bg-gray-950
-          text-gray-200
-          font-sans
-          min-h-screen
-          overflow-x-hidden
         `}
       >
         <LanguageProvider>

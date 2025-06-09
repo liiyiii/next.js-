@@ -175,7 +175,7 @@ export default function Home() {
             <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between space-y-8 md:space-y-0 md:space-x-12">
               <div className="w-full md:w-1/2 text-center md:text-left">
                   <h1 
-                    className="text-4xl md:text-6xl font-extrabold mb-4 animate-slide-in-up text-purple-300 bg-red-500" 
+                    className="text-4xl md:text-6xl font-extrabold mb-4 animate-slide-in-up text-purple-300"
                     id="hero-main-message"
                     dangerouslySetInnerHTML={{ __html: t('heroMainMessage').replace(/\$\{gradientTextClass\}/g, gradientTextClass) }}
                   ></h1>

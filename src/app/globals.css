@@ -24,11 +24,13 @@
 
 .animate-bounce-horizontal { animation: bounce-horizontal 1s infinite; }
 
-/* Basic styling for dropzone hover / .dropzone.hover { border-color: #a78bfa; / purple-400 / background-color: #1f2937; / gray-800 */ }
+/* Basic styling for dropzone hover */
+.dropzone.hover { border-color: #a78bfa; /* purple-400 */ background-color: #1f2937; /* gray-800 */ }
 
-/* Overlay to make text more readable on the background image / .hero-image-overlay::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); / Dark overlay */ z-index: 0; border-radius: 0.75rem; }
+/* Overlay to make text more readable on the background image */
+.hero-image-overlay::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); /* Dark overlay */ z-index: 0; border-radius: 0.75rem; }
 
-/* Ensure content is above the overlay */ 
+/* Ensure content is above the overlay */
 .hero-image-container > * { position: relative; z-index: 1; }
 
 /* Modal specific styles */
