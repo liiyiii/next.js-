@@ -1,43 +1,134 @@
-@tailwind base;
-@tailwind components; 
-@tailwind utilities;
+@import "tailwindcss";
 
-@layer base { body { @apply bg-gray-950 text-gray-200 font-sans min-h-screen overflow-x-hidden antialiased; /* The font variables from layout.tsx will still apply. / / 'antialiased' is also in layout.tsx body className, which is fine. */ } }
+@layer base {
+  body {
+    /* 替换@apply为原生CSS变量 */
+    background-color: #0a0a0a; /* 对应bg-gray-950 */
+    color: #e5e5e5; /* 对应text-gray-200 */
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
 
-/* Custom CSS for animations from 3.html */ @keyframes fade-in-down { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+/* 原注释中多余的斜杠需要修正 */
+/* The font variables from layout.tsx will still apply. 'antialiased' is also in layout.tsx body className, which is fine. */
+/* Custom CSS for animations from 3.html */
+@keyframes fade-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
-@keyframes slide-in-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slide-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
-@keyframes float { 0% { transform: translateY(0); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0); } }
+@keyframes float {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
 
-@keyframes pulse-subtle { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.4; } }
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
 
-@keyframes bounce-horizontal { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(10px); } }
+@keyframes bounce-horizontal {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(10px);
+  }
+}
 
-/* Utility classes for animations - these will be applied via className in components */ .animate-fade-in-down { animation: fade-in-down 0.5s ease-out forwards; }
+/* Utility classes for animations - these will be applied via className in components */
+.animate-fade-in-down {
+  animation: fade-in-down 0.5s ease-out forwards;
+}
 
-.animate-slide-in-up { animation: slide-in-up 0.5s ease-out forwards; }
+.animate-slide-in-up {
+  animation: slide-in-up 0.5s ease-out forwards;
+}
 
-.animate-float { animation: float 3s ease-in-out infinite; }
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
 
-.animate-pulse-subtle { animation: pulse-subtle 4s ease-in-out infinite; }
+.animate-pulse-subtle {
+  animation: pulse-subtle 4s ease-in-out infinite;
+}
 
-.animate-bounce-horizontal { animation: bounce-horizontal 1s infinite; }
+.animate-bounce-horizontal {
+  animation: bounce-horizontal 1s infinite;
+}
 
 /* Basic styling for dropzone hover */
-.dropzone.hover { border-color: #a78bfa; /* purple-400 */ background-color: #1f2937; /* gray-800 */ }
+.dropzone.hover {
+  border-color: #a78bfa; /* purple-400 */
+  background-color: #1f2937; /* gray-800 */
+}
 
 /* Overlay to make text more readable on the background image */
-.hero-image-overlay::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); /* Dark overlay */ z-index: 0; border-radius: 0.75rem; }
+.hero-image-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5); /* Dark overlay */
+  z-index: 0;
+  border-radius: 0.75rem;
+}
 
 /* Ensure content is above the overlay */
-.hero-image-container > * { position: relative; z-index: 1; }
+.hero-image-container > * {
+  position: relative;
+  z-index: 1;
+}
 
 /* Modal specific styles */
-.custom-scrollbar::-webkit-scrollbar { width: 8px; }
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
 
-.custom-scrollbar::-webkit-scrollbar-track { background: #374151; /* gray-700 */ border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #374151; /* gray-700 */
+  border-radius: 10px;
+}
 
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #8b5cf6; /* purple-500 */ border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #8b5cf6; /* purple-500 */
+  border-radius: 10px;
+}
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #7c3aed; /* purple-600 */ }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #7c3aed; /* purple-600 */
+}
