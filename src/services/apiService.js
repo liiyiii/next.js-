@@ -67,12 +67,7 @@ function performPdfConversionRequest(endpoint, pdfFile, onUploadProgress) {
           }
           reject({ status: xhr.status, message: errorMessage, response: responseText });
         }
-      } catch (e) {
-        // This catch is for if JSON.parse itself throws an error on non-JSON responseText
-        // (though typically, the try-catch inside the 2xx block would handle JSON parsing for success).
-        // This primarily catches issues if `xhr.responseText` itself is problematic before parsing.
-        reject({ status: xhr.status, message: 'Failed to process response: ' + xhr.responseText, errorObject: e });
-      }
+      } catch (error) { reject({ status: xhr.status, message: 'Failed to process response: ' + xhr.responseText, errorObject: error }); }
     };
 
     xhr.onerror = () => {
