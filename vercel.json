@@ -1,0 +1,24 @@
+
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    },
+    {
+      "src": "app.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "50mb",
+        "runtime": "python3.9",
+        "pip": "install -r requirements.txt && apt-get update && apt-get install -y libreoffice-writer pandoc --no-install-recommends"
+      }
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/app.py"
+    }
+  ]
+}
