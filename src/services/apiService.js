@@ -1,6 +1,6 @@
 // src/services/apiService.js
 
-const API_BASE_URL = 'http://localhost:5000';
+const API_BASE_URL = '/api';
 
 /**
  * Helper function to handle XHR requests for file uploads.
