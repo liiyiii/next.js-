@@ -18,33 +18,24 @@ app = Flask(__name__)
 CORS(app) # Enable CORS for all routes and origins
 
 # --- Global Variables and Setup ---
-STATIC_CONVERSIONS_DIR = Path('converted_files').resolve()
+STATIC_CONVERSIONS_DIR = Path('/tmp/converted_files').resolve()
 
 # --- Helper Functions ---
 def init_landing_ai_header():
     try:
-        config_file_path = Path("config.json")
-        if not config_file_path.is_file():
-            print("Warning: config.json not found. OCR will likely fail.")
-            return None
-        with open(config_file_path, "r") as config_file:
-            config = json.load(config_file)
-        api_key = config.get("api_key")
-        if not api_key or api_key == "YOUR_LANDINGAI_API_KEY_PLACEHOLDER":
-            print("Warning: Landing AI API key not found or is a placeholder in config.json.")
+        api_key = os.environ.get("LANDINGAI_API_KEY")
+        if not api_key:
+            print("Warning: LANDINGAI_API_KEY environment variable not set. OCR will likely fail.")
             return None
         return { "Authorization": "Basic " + api_key }
-    except json.JSONDecodeError:
-        print("Warning: config.json is not valid JSON. OCR will likely fail.")
-        return None
     except Exception as e:
-        print(f"Error loading config.json: {e}")
+        print(f"Error initializing Landing AI header: {e}")
         return None
 
 def get_agentic_document_analysis(input_pdf_path: Path, output_json_path: Path):
     headers = init_landing_ai_header()
     if headers is None:
-        raise ValueError("Landing AI API not configured or config.json issue. Cannot perform OCR.")
+        raise ValueError("Landing AI API not configured. LANDINGAI_API_KEY environment variable may be missing. Cannot perform OCR.")
 
     url = "https://api.va.landing.ai/v1/tools/agentic-document-analysis"
     try:
@@ -331,7 +322,7 @@ def convert_image_ocr_pdf():
             import traceback
             traceback.print_exc()
             if "Landing AI API not configured" in str(e):
-                 return jsonify({"error": "Landing AI API not configured or config.json issue"}), 500
+                 return jsonify({"error": "Landing AI API not configured. LANDINGAI_API_KEY environment variable may be missing."}), 500
             return jsonify({"error": f"Data or configuration error: {str(e)}"}), 500
         except requests.exceptions.RequestException as e: # For Landing AI API errors
             print(f"Landing AI API request error: {e}")
@@ -355,28 +346,3 @@ def convert_image_ocr_pdf():
             return jsonify({"error": f"An unexpected server error occurred during OCR: {str(e)}"}), 500
     else:
         return jsonify({"error": "Invalid file type for OCR. Please upload a PDF."}), 400
-
-if __name__ == '__main__':
-    # Create the directory for converted files if it doesn't exist
-    STATIC_CONVERSIONS_DIR.mkdir(parents=True, exist_ok=True)
-    
-    # Create a dummy config.json if it doesn't exist
-    config_file_path = Path('config.json')
-    if not config_file_path.exists():
-        with open(config_file_path, 'w') as cf:
-            json.dump({"api_key": "YOUR_LANDINGAI_API_KEY_PLACEHOLDER"}, cf)
-        print("Created dummy config.json. Please replace placeholder API key.")
-
-    # Perform initial checks (API key and Pandoc)
-    print("Performing initial checks...")
-    init_landing_ai_header() # Will print warnings if not configured
-        
-    try:
-        pandoc_version = pypandoc.get_pandoc_version()
-        print(f"Pandoc version: {pandoc_version} found.")
-    except OSError:
-        print("WARNING: Pandoc not found. OCR PDF conversion will fail. Please install Pandoc and ensure it is in your system's PATH.")
-
-    print(f"Serving converted files from: {STATIC_CONVERSIONS_DIR}")
-    print("Starting combined PDF conversion server...")
-    app.run(host='0.0.0.0', port=5000, debug=True)
