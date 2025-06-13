@@ -1,0 +1,7 @@
+Flask
+flask-cors
+pdf2docx
+requests
+pypandoc
+python-dotenv
+pdf2image
