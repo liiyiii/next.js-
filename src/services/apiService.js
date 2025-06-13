@@ -77,7 +77,7 @@ function performPdfConversionRequest(endpoint, pdfFile, onUploadProgress) {
 
     xhr.onerror = () => {
       // Network errors (e.g., CORS, server down)
-      reject({ status: xhr.status, message: 'Network error or CORS issue.' });
+      reject({ status: xhr.status, message: '网络错误或跨域问题。' });
     };
 
     xhr.onabort = () => {

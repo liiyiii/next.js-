@@ -114,7 +114,11 @@ export const translations = {
         loadingDocument: "Loading document...",
         noDocumentToDisplay: "No document to display.",
         errorDisplayingDocument: "Error displaying document.",
-        errorPdfJsNotLoaded: "PDF library could not be loaded. Please try refreshing." // New key
+        errorPdfJsNotLoaded: "PDF library could not be loaded. Please try refreshing.", // New key
+        convertAnotherFileBtn: "Convert Another File",
+        previewOrEditBtn: "Preview or Edit",
+        downloadConvertedFileInSectionBtn: "Download Converted File",
+        downloadUrlNotReady: "Download URL is not available. Please try again or re-convert.",
     },
     zh: {
         logo: "PDF转换工具",
@@ -230,7 +234,11 @@ export const translations = {
         loadingDocument: "文档加载中...",
         noDocumentToDisplay: "无显示文档。",
         errorDisplayingDocument: "显示文档时出错。",
-        errorPdfJsNotLoaded: "PDF库未能加载。请尝试刷新页面。" // New key
+        errorPdfJsNotLoaded: "PDF库未能加载。请尝试刷新页面。", // New key
+        convertAnotherFileBtn: "转换另一个文件",
+        previewOrEditBtn: "预览或编辑",
+        downloadConvertedFileInSectionBtn: "下载转换后的文件",
+        downloadUrlNotReady: "下载链接不可用。请重试或重新转换文件。",
     },
 };
 

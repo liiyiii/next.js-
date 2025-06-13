@@ -102,10 +102,12 @@ export default function Home() {
 
   const handleConversionSuccess = (converterType: 'digital' | 'image', downloadUrl: string, previewImageUrls: string[] | null, originalPdfFile: File | null) => {
     if (activeConverter === converterType) {
+      console.log('Page: handleConversionSuccess - Received downloadUrl:', downloadUrl, 'Preview URLs:', previewImageUrls);
       setGlobalDocxDownloadUrl(downloadUrl);
       setGlobalDocxPreviewImageUrls(previewImageUrls);
       setGlobalUploadedPdfFile(originalPdfFile); 
       setGlobalIsLoading(false);
+      console.log('Page: handleConversionSuccess - Updated globalDocxDownloadUrl to:', downloadUrl); 
     }
   };
 
@@ -159,6 +161,7 @@ export default function Home() {
     }
   };
 
+  console.log('Page: Rendering with globalDocxDownloadUrl:', globalDocxDownloadUrl);
 
   return (
     <>
@@ -175,7 +178,7 @@ export default function Home() {
             <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between space-y-8 md:space-y-0 md:space-x-12">
               <div className="w-full md:w-1/2 text-center md:text-left">
                   <h1 
-                    className="text-4xl md:text-6xl font-extrabold mb-4 animate-slide-in-up text-purple-300 bg-red-500" 
+                    className="text-4xl md:text-6xl font-extrabold mb-4 animate-slide-in-up text-purple-300" 
                     id="hero-main-message"
                     dangerouslySetInnerHTML={{ __html: t('heroMainMessage').replace(/\$\{gradientTextClass\}/g, gradientTextClass) }}
                   ></h1>
@@ -231,6 +234,7 @@ export default function Home() {
             onConversionStart={handleConversionStart}
             onConversionSuccess={handleConversionSuccess} 
             onConversionError={handleConversionError}
+            docxDownloadUrl={globalDocxDownloadUrl} // Added prop
             // showGlobalLoading={activeConverter === 'digital' && globalIsLoading}
           />
 
@@ -256,6 +260,7 @@ export default function Home() {
             onConversionStart={handleConversionStart}
             onConversionSuccess={handleConversionSuccess}
             onConversionError={handleConversionError}
+            docxDownloadUrl={globalDocxDownloadUrl} // Added prop
             // showGlobalLoading={activeConverter === 'image' && globalIsLoading}
           />
 
@@ -364,7 +369,7 @@ export default function Home() {
 
           <section id="start-converting" className="py-20 bg-gray-800 text-center">
             <div className="container mx-auto px-4">
-                <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-100" id="start-converting-title">{t('startConvertingTitle')}</h2>
+                <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-shimmer text-glow" id="start-converting-title">{t('startConvertingTitle')}</h2>
                 <p className="text-xl text-gray-300 mb-12 max-w-3xl mx-auto" id="start-converting-subtitle">{t('startConvertingSubtitle')}</p>
                 <div className="flex flex-col md:flex-row justify-center space-y-6 md:space-y-0 md:space-x-8">
                     <button 

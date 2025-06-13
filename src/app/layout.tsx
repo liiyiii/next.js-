@@ -5,6 +5,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AlertProvider } from "@/contexts/AlertContext";
 import CustomAlertModal from "@/components/CustomAlertModal";
 import DynamicPdfJsWorkerConfigLoader from "@/components/DynamicPdfJsWorkerConfigLoader";
+import StagewiseToolbarWrapper from '@/components/StagewiseToolbar';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,17 +33,12 @@ export default function RootLayout({
         className={`
           ${geistSans.variable}
           ${geistMono.variable}
-          antialiased
-          bg-gray-950
-          text-gray-200
-          font-sans
-          min-h-screen
-          overflow-x-hidden
         `}
       >
         <LanguageProvider>
           <AlertProvider>
             <DynamicPdfJsWorkerConfigLoader />
+            {process.env.NODE_ENV === 'development' && <StagewiseToolbarWrapper />}
             {children}
             <CustomAlertModal />
           </AlertProvider>

@@ -35,18 +35,46 @@ const FullScreenPreviewModal: React.FC<FullScreenPreviewModalProps> = ({
   const [pdfJsLibInstance, setPdfJsLibInstance] = useState<any>(null);
 
   useEffect(() => {
-    if ((window as any).pdfjsLib) {
-      setPdfJsLibInstance((window as any).pdfjsLib);
-    } else {
-      console.warn("PDF.js library not immediately available in FullScreenPreviewModal.");
-      // Consider setting an error or a retry mechanism if PdfJsWorkerConfig might take time
+    let timeoutId: NodeJS.Timeout | null = null;
+
+    if (isOpen && !pdfJsLibInstance) {
+      if ((window as any).pdfjsLib) {
+        setPdfJsLibInstance((window as any).pdfjsLib);
+        console.log("PDF.js library successfully set in FullScreenPreviewModal.");
+      } else {
+        console.warn("PDF.js library not immediately available. Retrying in 1s...");
+        timeoutId = setTimeout(() => {
+          if ((window as any).pdfjsLib) {
+            setPdfJsLibInstance((window as any).pdfjsLib);
+            console.log("PDF.js library successfully set on retry.");
+          } else {
+            console.error("PDF.js library still not available after retry.");
+            if (documentType === 'pdf' && isOpen) { // Check isOpen again inside timeout
+              setError(t('errorPdfJsNotLoaded'));
+              setIsLoading(false);
+            }
+          }
+        }, 1000);
+      }
     }
-  }, []);
+
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, documentType, pdfJsLibInstance, t]); // Added t to dependencies as it's used in setError
 
   const renderPdfPage = async (pdfDocument: any, pageNum: number) => {
-    if (!canvasRef.current || !pdfJsLibInstance) return;
+    console.log('FSPModal: renderPdfPage called for page:', pageNum);
+    if (!canvasRef.current || !pdfJsLibInstance) {
+      console.log('FSPModal: renderPdfPage returning early. Canvas available:', !!canvasRef.current, 'pdfJsLibInstance available:', !!pdfJsLibInstance);
+      return;
+    }
     setIsLoading(true);
     try {
+      console.log('FSPModal: Attempting to get page from PDF document.');
       const page = await pdfDocument.getPage(pageNum);
       const viewport = page.getViewport({ scale: Math.min(2, (canvasRef.current.parentElement?.clientHeight || 1000) / page.getViewport({scale:1}).height ) }); 
 
@@ -62,7 +90,7 @@ const FullScreenPreviewModal: React.FC<FullScreenPreviewModalProps> = ({
       await page.render({ canvasContext: context, viewport }).promise;
       setError(null);
     } catch (renderError: any) {
-      console.error('Error rendering PDF page:', renderError);
+      console.error('FSPModal: Error during page.render:', renderError);
       setError(renderError.message || t('errorDisplayingDocument'));
     } finally {
       setIsLoading(false);
@@ -70,6 +98,7 @@ const FullScreenPreviewModal: React.FC<FullScreenPreviewModalProps> = ({
   };
 
   useEffect(() => {
+    console.log('FSPModal: Main data effect triggered. isOpen:', isOpen, 'Type:', documentType, 'pdfFile:', pdfFile, 'pdfJsLibInstance available:', !!pdfJsLibInstance);
     if (isOpen) {
       setCurrentPage(initialPage);
       setError(null);
@@ -82,13 +111,17 @@ const FullScreenPreviewModal: React.FC<FullScreenPreviewModalProps> = ({
       setIsLoading(true); 
 
       if (documentType === 'pdf' && pdfFile && pdfJsLibInstance) {
+        console.log('FSPModal: Attempting to read PDF file for preview:', pdfFile.name, pdfFile.size, pdfFile.type);
         const reader = new FileReader();
         reader.onload = async (e) => {
           if (e.target?.result) {
             try {
               const typedArray = new Uint8Array(e.target.result as ArrayBuffer);
+              console.log('FSPModal: FileReader success. TypedArray length:', typedArray.byteLength);
+              console.log('FSPModal: Calling pdfJsLibInstance.getDocument()');
               const loadingTask = pdfJsLibInstance.getDocument({ data: typedArray });
               const loadedPdfDoc = await loadingTask.promise;
+              console.log('FSPModal: getDocument success. Num pages:', loadedPdfDoc.numPages);
               
               setPdfDoc(loadedPdfDoc);
               setNumPages(loadedPdfDoc.numPages);
@@ -101,7 +134,8 @@ const FullScreenPreviewModal: React.FC<FullScreenPreviewModalProps> = ({
                 setIsLoading(false);
               }
             } catch (loadError: any) {
-              console.error('Error loading PDF document:', loadError);
+              console.error('FSPModal: Error in getDocument/load process:', loadError);
+              console.error('FSPModal: Error name:', loadError.name, 'Message:', loadError.message, 'Details:', loadError.details);
               setError(loadError.message || t('errorDisplayingDocument'));
               setPdfDoc(null);
               setNumPages(0);
@@ -110,6 +144,7 @@ const FullScreenPreviewModal: React.FC<FullScreenPreviewModalProps> = ({
           }
         };
         reader.onerror = () => {
+          console.error('FSPModal: FileReader onerror event triggered.');
           setError(t('errorDisplayingDocument'));
           setIsLoading(false);
         };

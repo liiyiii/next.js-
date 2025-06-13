@@ -37,27 +37,41 @@ const PreviewArea: React.FC<PreviewAreaProps> = ({
 }) => {
   const { t } = useLanguage();
 
-  const handleDownload = () => {
-    if (docxDownloadUrl) {
-      const link = document.createElement('a');
-      link.href = docxDownloadUrl;
-      // Attempt to extract filename or use a generic one
-      let filename = "converted_document.docx";
-      try {
-        // Basic filename extraction, can be improved
-        const url = new URL(docxDownloadUrl);
-        const pathnameParts = url.pathname.split('/');
-        const potentialFilename = pathnameParts[pathnameParts.length - 1];
-        if (potentialFilename && potentialFilename.includes('.')) { // Basic check for a file extension
-          filename = potentialFilename;
-        }
-      } catch (e) {
-        console.warn("Could not parse filename from URL, using generic name.", e);
+  const handleDownload = async () => {
+    try {
+      if (!docxDownloadUrl) {
+        console.error('下载URL不存在');
+        return;
       }
-      link.setAttribute('download', filename); 
+
+      // 构建完整的下载URL
+      const fullUrl = `${window.location.origin}${docxDownloadUrl}`;
+      console.log('尝试下载文件:', fullUrl);
+
+      // 先检查文件是否存在
+      const checkResponse = await fetch(fullUrl, { method: 'HEAD' });
+      if (!checkResponse.ok) {
+        throw new Error(`文件检查失败: ${checkResponse.status} ${checkResponse.statusText}`);
+      }
+
+      // 创建一个隐藏的a标签来触发下载
+      const link = document.createElement('a');
+      link.href = fullUrl;
+      link.setAttribute('download', docxDownloadUrl.split('/').pop() || 'converted.docx');
+      link.setAttribute('target', '_blank');
+      link.setAttribute('rel', 'noopener noreferrer');
+      
+      // 添加到文档中
       document.body.appendChild(link);
+      
+      // 触发点击
       link.click();
+      
+      // 清理DOM
       document.body.removeChild(link);
+    } catch (error) {
+      console.error('下载文件时出错:', error);
+      alert('下载文件时出错，请稍后重试');
     }
   };
 
@@ -81,8 +95,8 @@ const PreviewArea: React.FC<PreviewAreaProps> = ({
           )}
 
           {!conversionHasOccurred && !isLoading && (
-            <div className="text-center text-gray-500 py-16 min-h-[400px] flex items-center justify-center"> {/* Added min-height */}
-              <p className="text-xl">{t('previewAreaInitialPlaceholder')}</p>
+            <div className="text-center text-gray-500 py-16 min-h-[400px] flex items-center justify-center">
+              <p className="text-shimmer text-glow text-xl">{t('previewPlaceholder')}</p>
             </div>
           )}
 

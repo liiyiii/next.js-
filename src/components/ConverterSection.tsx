@@ -35,6 +35,7 @@ interface ConverterSectionProps {
   onConversionStart: (conversionType: 'digital' | 'image') => void;
   onConversionSuccess: (conversionType: 'digital' | 'image', downloadUrl: string, previewImageUrls: string[] | null, originalPdfFile: File | null) => void;
   onConversionError: (conversionType: 'digital' | 'image', errorMessage: string) => void;
+  docxDownloadUrl?: string | null; // Added new prop
 }
 
 type ConversionStatus = 'ready' | 'uploading' | 'converting' | 'success' | 'error' | 'noFile';
@@ -61,14 +62,17 @@ const ConverterSection: React.FC<ConverterSectionProps> = ({
   onConversionStart,
   onConversionSuccess,
   onConversionError,
+  docxDownloadUrl, // Destructure new prop
 }) => {
   const { t } = useLanguage();
   const { showAlert } = useAlert();
-  
+
   const [currentSelectedFile, setCurrentSelectedFile] = useState<File | null>(null);
   const [fileNameDisplay, setFileNameDisplay] = useState<string>('');
   
   const [conversionStatus, setConversionStatus] = useState<ConversionStatus>('ready');
+
+  console.log(`ConverterSection (${id}): Rendered with docxDownloadUrl:`, docxDownloadUrl, 'Status:', conversionStatus);
   const [progress, setProgress] = useState<number>(0);
   const [statusMessage, setStatusMessage] = useState<string>(''); 
   const [showConversionArea, setShowConversionArea] = useState<boolean>(false);
@@ -79,6 +83,50 @@ const ConverterSection: React.FC<ConverterSectionProps> = ({
   const [isConvertButtonDisabled, setIsConvertButtonDisabled] = useState<boolean>(true); 
   const [showLoadingSpinner, setShowLoadingSpinner] = useState<boolean>(false);
   // const [showSummarizeButton, setShowSummarizeButton] = useState<boolean>(false); // Button removed
+
+  const handleConvertAnother = () => {
+    setCurrentSelectedFile(null);
+    setFileNameDisplay('');
+    setProgress(0);
+    setStatusMessage('');
+    setConversionStatus('ready');
+    setShowProgressBar(false);
+    setShowConversionArea(false); // Hide conversion area which includes the main convert button
+    setIsConvertButtonDisabled(true); // Ensure main convert button is disabled
+    setConvertButtonText(t('convertBtn')); // Reset main convert button text
+    onFileSelected(conversionType, null); // Notify page.tsx to clear global states
+  };
+
+  const handlePreviewOrEdit = () => {
+    document.getElementById('editing')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleDownloadSuccessFile = () => {
+    console.log(`ConverterSection (${id}): handleDownloadSuccessFile clicked. URL:`, docxDownloadUrl);
+    alert(`ConverterSection (${id}): Download button clicked. URL: ${docxDownloadUrl}`); 
+    if (docxDownloadUrl) {
+      const link = document.createElement('a');
+      link.href = docxDownloadUrl;
+      let filename = "converted_document.docx";
+      try {
+        const url = new URL(docxDownloadUrl);
+        const pathnameParts = url.pathname.split('/');
+        const potentialFilename = pathnameParts[pathnameParts.length - 1];
+        if (potentialFilename && potentialFilename.includes('.')) {
+            filename = potentialFilename;
+        }
+      } catch (e) { 
+        console.warn("Could not parse filename from URL for ConverterSection download.", e); 
+      }
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      console.error("Download button clicked but docxDownloadUrl is not available.");
+      showAlert(t('downloadUrlNotReady'), 'error');
+    }
+  };
 
   useEffect(() => {
     const statusMsgElement = document.getElementById(statusMessageId);
@@ -104,11 +152,15 @@ const ConverterSection: React.FC<ConverterSectionProps> = ({
   }, [statusMessage, conversionStatus, statusMessageId]);
 
   useEffect(() => {
-    if ((conversionStatus === 'ready' && currentSelectedFile)) {
-        setConvertButtonText(t('convertBtn'));
-    } else if (conversionStatus === 'success' || conversionStatus === 'error') {
-        setConvertButtonText(t('convertAnotherBtn')); 
+    // Simplified: Main convert button text doesn't need to change to "Convert Another" anymore
+    // as there's a dedicated button for that.
+    if (conversionStatus === 'ready' && currentSelectedFile) {
+      setConvertButtonText(t('convertBtn'));
     }
+    // If not ready or no file, it might be disabled or show initial text, 
+    // which is handled by isConvertButtonDisabled state and initial convertButtonText value.
+    // If already converting, uploading, success, or error, the button text shouldn't change here
+    // as the button itself might be hidden or replaced.
   }, [t, conversionStatus, currentSelectedFile]);
 
 
@@ -252,7 +304,7 @@ const ConverterSection: React.FC<ConverterSectionProps> = ({
           fileNameDisplay={fileNameDisplay} 
         />
         
-        {showConversionArea && (
+        {showConversionArea && conversionStatus !== 'success' && ( // Hide main convert button on success
             <div id={conversionAreaId} className="mt-12 flex flex-col md:flex-row items-center justify-center space-y-6 md:space-y-0 md:space-x-10">
                 <button 
                     id={convertBtnId} 
@@ -265,19 +317,43 @@ const ConverterSection: React.FC<ConverterSectionProps> = ({
                     )}
                     <span id={`${convertBtnId}-text`}>{convertButtonText}</span>
                 </button>
-                
-                {/* Download, Edit, and Summarize buttons are no longer rendered from this component directly */}
-                {/* Their visibility and actions are now controlled by page.tsx via PreviewArea or other global components */}
             </div>
         )}
 
-        {showProgressBar && (
+        {showProgressBar && conversionStatus !== 'success' && ( // Also hide progress bar on success (buttons take over)
             <div id={progressBarContainerId} className="w-full max-w-xl mx-auto mt-12 bg-gray-700 rounded-full h-3 overflow-hidden">
                 <div id={progressBarId} className="bg-purple-500 h-full rounded-full transition-all duration-300 ease-in-out" style={{ width: `${progress}%` }}></div>
             </div>
         )}
         
         <p id={statusMessageId} className="text-center mt-6 text-xl font-medium"></p>
+
+        {conversionStatus === 'success' && (
+          <div id={`${id}-success-actions`} className="mt-10 flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-6">
+            <button
+              id={`${id}-convert-another-btn`}
+              onClick={handleConvertAnother}
+              className="btn bg-gray-600 text-white px-6 py-3 rounded-lg text-lg font-medium hover:bg-gray-700 transition-all duration-300"
+            >
+              {t('convertAnotherFileBtn')}
+            </button>
+            <button
+              id={`${id}-preview-edit-btn`}
+              onClick={handlePreviewOrEdit}
+              className="btn bg-blue-600 text-white px-6 py-3 rounded-lg text-lg font-medium hover:bg-blue-700 transition-all duration-300"
+            >
+              {t('previewOrEditBtn')}
+            </button>
+            <button
+              id={`${id}-download-success-btn`}
+              onClick={handleDownloadSuccessFile}
+              disabled={!docxDownloadUrl}
+              className="btn bg-green-600 text-white px-6 py-3 rounded-lg text-lg font-medium hover:bg-green-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {t('downloadConvertedFileInSectionBtn')}
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );

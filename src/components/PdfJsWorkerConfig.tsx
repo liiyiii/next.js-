@@ -24,6 +24,8 @@ const PdfJsWorkerConfig = () => {
       console.log('PDF.js library v3.11.174 loaded from CDN.');
       if ((window as any).pdfjsLib) {
         (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
+        (window as any).pdfjsLib.cMapUrl = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/';
+        (window as any).pdfjsLib.cMapPacked = true;
         console.log('PDF.js worker v3.11.174 configured from CDN.');
         isPdfJsLibReady = true;
       } else {
