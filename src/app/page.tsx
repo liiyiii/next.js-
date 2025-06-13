@@ -73,9 +73,7 @@ export default function Home() {
 
 
   useEffect(() => {
-    // @ts-ignore
     if (window.lucide) {
-      // @ts-ignore
       window.lucide.createIcons();
     }
     document.documentElement.lang = currentLanguage;
