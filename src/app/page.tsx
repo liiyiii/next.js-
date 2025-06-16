@@ -193,14 +193,14 @@ export default function Home() {
                       <button 
                         className="bg-white text-purple-700 px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-200 transition-all duration-300 shadow-lg transform hover:scale-105" 
                         id="hero-digital-btn"
-                        onClick={(e) => { e.preventDefault(); document.getElementById('digital-converter')?.scrollIntoView({ behavior: 'smooth' }); }}
+                        onClick={(e) => { e.preventDefault(); const targetElement = document.getElementById('digital-converter'); if (targetElement) { targetElement.scrollIntoView({ behavior: 'smooth' }); } else { console.error('Hero button: Target element "digital-converter" not found.'); } }}
                       >
                         {t('heroDigitalBtn')}
                       </button>
                       <button 
                         className="bg-white text-indigo-700 px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-200 transition-all duration-300 shadow-lg transform hover:scale-105" 
                         id="hero-image-btn"
-                        onClick={(e) => { e.preventDefault(); document.getElementById('image-converter')?.scrollIntoView({ behavior: 'smooth' }); }}
+                        onClick={(e) => { e.preventDefault(); const targetElement = document.getElementById('image-converter'); if (targetElement) { targetElement.scrollIntoView({ behavior: 'smooth' }); } else { console.error('Hero button: Target element "image-converter" not found.'); } }}
                       >
                         {t('heroImageBtn')}
                       </button>
