@@ -4,6 +4,7 @@
 import React, { useState } from 'react'; // useState for currentImageIndex if needed later
 import { useLanguage } from '@/contexts/LanguageContext';
 import Image from 'next/image'; // Using Next.js Image component for optimization
+import { API_BASE_URL } from '@/services/apiService';
 
 interface DocxPreviewPaneProps {
   previewImageUrls: string[] | null;
@@ -16,20 +17,22 @@ const DocxPreviewPane: React.FC<DocxPreviewPaneProps> = ({
   onPreviewClick, 
   placeholderId 
 }) => {
+  // console.log('DocxPreviewPane: Received previewImageUrls prop:', previewImageUrls); // Removed
   const { t } = useLanguage();
   // const [currentImageIndex, setCurrentImageIndex] = useState(0); // For future pagination
 
   const hasImages = previewImageUrls && previewImageUrls.length > 0 && previewImageUrls[0];
+  // console.log('DocxPreviewPane: hasImages check result:', hasImages); // Removed
 
   return (
     <div
       onClick={onPreviewClick}
-      className="docx-preview-pane p-2 border border-gray-700 rounded-md bg-gray-900 min-h-[300px] md:min-h-[400px] flex items-center justify-center cursor-pointer overflow-hidden"
+      className="docx-preview-pane p-2 border border-gray-700 rounded-md bg-gray-900 min-h-[300px] md:min-h-[400px] flex items-center justify-center cursor-pointer overflow-hidden h-full"
       style={{ maxWidth: '100%' }}
     >
       {hasImages ? (
         <Image
-          src={previewImageUrls[0]} // Display the first image
+          src={`${API_BASE_URL}${previewImageUrls[0]}`} // Display the first image
           alt={t('docxPreviewAltText')}
           width={500} // Provide a base width, Next/Image needs this unless fill is true
           height={700} // Provide a base height
@@ -38,7 +41,7 @@ const DocxPreviewPane: React.FC<DocxPreviewPaneProps> = ({
             maxHeight: '100%', 
             objectFit: 'contain', // 'contain' or 'scale-down'
             width: 'auto', // Override if you want it to scale within bounds
-            height: 'auto' // Override if you want it to scale within bounds
+            height: '100%'
           }}
           // Consider adding unoptimized={true} if image URLs are external and optimization is not needed/possible
           // Or configure remotePatterns in next.config.js if using external URLs often
