@@ -178,12 +178,12 @@ export default function Home() {
             <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between space-y-8 md:space-y-0 md:space-x-12">
               <div className="w-full md:w-1/2 text-center md:text-left">
                   <h1 
-                    className="text-4xl md:text-6xl font-extrabold mb-4 animate-slide-in-up text-purple-300" 
+                    className="text-4xl md:text-6xl font-extrabold mb-4 text-purple-300" 
                     id="hero-main-message"
                     dangerouslySetInnerHTML={{ __html: t('heroMainMessage').replace(/\$\{gradientTextClass\}/g, gradientTextClass) }}
                   ></h1>
-                  <div className="inline-flex items-center bg-gray-800 text-gray-300 text-sm px-4 py-2 rounded-full mb-6 shadow-md animate-fade-in-down">
-                      <span className="w-2 h-2 bg-orange-400 rounded-full mr-2 animate-pulse-subtle"></span>
+                  <div className="inline-flex items-center bg-gray-800 text-gray-300 text-sm px-4 py-2 rounded-full mb-6 shadow-md">
+                      <span className="w-2 h-2 bg-orange-400 rounded-full mr-2"></span>
                       <span 
                         id="hero-tag-message"
                         dangerouslySetInnerHTML={{ __html: t('heroTag').replace(/\$\{gradientTextClass\}/g, gradientTextClass) }}
@@ -193,14 +193,26 @@ export default function Home() {
                       <button 
                         className="bg-white text-purple-700 px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-200 transition-all duration-300 shadow-lg transform hover:scale-105" 
                         id="hero-digital-btn"
-                        onClick={(e) => { e.preventDefault(); const targetElement = document.getElementById('digital-converter'); if (targetElement) { targetElement.scrollIntoView({ behavior: 'smooth' }); } else { console.error('Hero button: Target element "digital-converter" not found.'); } }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const targetElement = document.getElementById('digital-converter');
+                          if (targetElement) {
+                            targetElement.scrollIntoView({ behavior: 'smooth' });
+                          }
+                        }}
                       >
                         {t('heroDigitalBtn')}
                       </button>
                       <button 
                         className="bg-white text-indigo-700 px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-200 transition-all duration-300 shadow-lg transform hover:scale-105" 
                         id="hero-image-btn"
-                        onClick={(e) => { e.preventDefault(); const targetElement = document.getElementById('image-converter'); if (targetElement) { targetElement.scrollIntoView({ behavior: 'smooth' }); } else { console.error('Hero button: Target element "image-converter" not found.'); } }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const targetElement = document.getElementById('image-converter');
+                          if (targetElement) {
+                            targetElement.scrollIntoView({ behavior: 'smooth' });
+                          }
+                        }}
                       >
                         {t('heroImageBtn')}
                       </button>
@@ -369,7 +381,7 @@ export default function Home() {
 
           <section id="start-converting" className="py-20 bg-gray-800 text-center">
             <div className="container mx-auto px-4">
-                <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-shimmer text-glow" id="start-converting-title">{t('startConvertingTitle')}</h2>
+                <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-shimmer text-glow animate-bounce hover:scale-110 hover:text-purple-400 transition-all duration-500 leading-relaxed py-2" id="start-converting-title">{t('startConvertingTitle')}</h2>
                 <p className="text-xl text-gray-300 mb-12 max-w-3xl mx-auto" id="start-converting-subtitle">{t('startConvertingSubtitle')}</p>
                 <div className="flex flex-col md:flex-row justify-center space-y-6 md:space-y-0 md:space-x-8">
                     <button 
