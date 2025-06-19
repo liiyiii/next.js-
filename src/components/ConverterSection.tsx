@@ -5,7 +5,7 @@ import FeatureCard from './FeatureCard';
 import Dropzone from './Dropzone';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAlert } from '@/contexts/AlertContext';
-import { convertDigitalPdf, convertImageOcrPdf } from '@/services/apiService'; 
+import { API_BASE_URL, convertDigitalPdf, convertImageOcrPdf } from '@/services/apiService'; 
 
 interface FeatureData {
   iconSVG: string; 
@@ -103,10 +103,9 @@ const ConverterSection: React.FC<ConverterSectionProps> = ({
 
   const handleDownloadSuccessFile = () => {
     console.log(`ConverterSection (${id}): handleDownloadSuccessFile clicked. URL:`, docxDownloadUrl);
-    alert(`ConverterSection (${id}): Download button clicked. URL: ${docxDownloadUrl}`); 
     if (docxDownloadUrl) {
       const link = document.createElement('a');
-      link.href = docxDownloadUrl;
+      link.href = `${API_BASE_URL}${docxDownloadUrl}`;
       let filename = "converted_document.docx";
       try {
         const url = new URL(docxDownloadUrl);
@@ -127,6 +126,23 @@ const ConverterSection: React.FC<ConverterSectionProps> = ({
       showAlert(t('downloadUrlNotReady'), 'error');
     }
   };
+
+  useEffect(() => {
+    // 当语言改变时更新状态消息
+    if (conversionStatus === 'success') {
+      setStatusMessage(t('statusSuccess'));
+    } else if (conversionStatus === 'uploading') {
+      setStatusMessage(`${t('statusUploading')} (${progress}%)`);
+    } else if (conversionStatus === 'converting') {
+      setStatusMessage(`${t('statusConverting')} (${progress}%)`);
+    } else if (conversionStatus === 'error') {
+      setStatusMessage(t('statusError'));
+    } else if (conversionStatus === 'noFile') {
+      setStatusMessage(t('statusNoFile'));
+    } else if (conversionStatus === 'ready' && currentSelectedFile) {
+      setStatusMessage(t('statusReady'));
+    }
+  }, [t, conversionStatus, progress, currentSelectedFile]);
 
   useEffect(() => {
     const statusMsgElement = document.getElementById(statusMessageId);
@@ -170,7 +186,7 @@ const ConverterSection: React.FC<ConverterSectionProps> = ({
 
     if (file) {
       if (file.type === 'application/pdf') {
-        setFileNameDisplay(`${t('selectedFile')}: ${file.name}`);
+        setFileNameDisplay(`${t('selectedFile')} ${file.name}`);
         setConversionStatus('ready');
         setStatusMessage(t('statusReady'));
         setShowConversionArea(true);
@@ -218,16 +234,16 @@ const ConverterSection: React.FC<ConverterSectionProps> = ({
 
     setIsConvertButtonDisabled(true);
     setShowLoadingSpinner(true);
+    setConvertButtonText('转换中');
     setConversionStatus('uploading');
-    setStatusMessage(t('statusUploading'));
+    setStatusMessage(`${t('statusUploading')} (${progress}%)`);
     setProgress(0); 
     setShowProgressBar(true);
-    // setShowDownloadButtonInSection(false); 
-    // setShowPreviewButton(false);
-    // setShowSummarizeButton(false);
 
     const handleUploadProgress = (percentage: number) => {
-      setProgress(Math.min(50, Math.round(percentage / 2))); 
+      const newProgress = Math.min(50, Math.round(percentage / 2));
+      setProgress(newProgress);
+      setStatusMessage(`${t('statusUploading')} (${newProgress}%)`);
     };
 
     const apiFunction = conversionType === 'digital' ? convertDigitalPdf : convertImageOcrPdf;
@@ -236,19 +252,16 @@ const ConverterSection: React.FC<ConverterSectionProps> = ({
       const response = await apiFunction(currentSelectedFile, handleUploadProgress);
       
       setConversionStatus('converting'); 
-      setStatusMessage(t('statusConverting')); 
       for (let i = 51; i <= 100; i += 7) { 
           setProgress(Math.min(100, i)); 
+          setStatusMessage(`${t('statusConverting')} (${Math.min(100, i)}%)`);
           await new Promise(resolve => setTimeout(resolve, 70)); 
       }
       setProgress(100); 
 
       setConversionStatus('success');
-      setStatusMessage(response.message || t('statusSuccess')); 
-      // setShowDownloadButtonInSection(true); 
-      // setShowPreviewButton(true);
-      // setShowSummarizeButton(true); 
-      onConversionSuccess(conversionType, response.docx_download_url, response.preview_image_urls, currentSelectedFile); 
+      setStatusMessage(t('statusSuccess'));
+      onConversionSuccess(conversionType, response.downloadUrl, response.previewImageUrls, currentSelectedFile); 
       
     } catch (error: any) {
       console.error(`Conversion API error for ${conversionType}:`, error);
