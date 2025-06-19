@@ -6,6 +6,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight, X as CloseIcon, Loader2 } from 'lucide-react';
+import { isPdfJsLibReady } from '@/components/PdfJsWorkerConfig';
 
 export interface FullScreenPreviewModalProps { 
   isOpen: boolean;
@@ -26,6 +27,7 @@ const FullScreenPreviewModal: React.FC<FullScreenPreviewModalProps> = ({
 }) => {
   const { t } = useLanguage();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const renderTaskRef = useRef<any | null>(null); // Added for PDF render task
 
   const [currentPage, setCurrentPage] = useState<number>(initialPage);
   const [numPages, setNumPages] = useState<number>(0);
@@ -38,17 +40,17 @@ const FullScreenPreviewModal: React.FC<FullScreenPreviewModalProps> = ({
     let timeoutId: NodeJS.Timeout | null = null;
 
     if (isOpen && !pdfJsLibInstance) {
-      if ((window as any).pdfjsLib) {
+      if ((window as any).pdfjsLib && isPdfJsLibReady) {
         setPdfJsLibInstance((window as any).pdfjsLib);
-        console.log("PDF.js library successfully set in FullScreenPreviewModal.");
+        console.log("FSPModal: PDF.js library successfully set (was ready).");
       } else {
-        console.warn("PDF.js library not immediately available. Retrying in 1s...");
+        console.warn("FSPModal: PDF.js library not available or not ready. Retrying in 1s...");
         timeoutId = setTimeout(() => {
-          if ((window as any).pdfjsLib) {
+          if ((window as any).pdfjsLib && isPdfJsLibReady) {
             setPdfJsLibInstance((window as any).pdfjsLib);
-            console.log("PDF.js library successfully set on retry.");
+            console.log("FSPModal: PDF.js library successfully set on retry (was ready).");
           } else {
-            console.error("PDF.js library still not available after retry.");
+            console.error("FSPModal: PDF.js library still not available or not ready after retry.");
             if (documentType === 'pdf' && isOpen) { // Check isOpen again inside timeout
               setError(t('errorPdfJsNotLoaded'));
               setIsLoading(false);
@@ -87,7 +89,10 @@ const FullScreenPreviewModal: React.FC<FullScreenPreviewModalProps> = ({
         throw new Error('Could not get canvas context');
       }
       
-      await page.render({ canvasContext: context, viewport }).promise;
+      const renderTask = page.render({ canvasContext: context, viewport });
+      renderTaskRef.current = renderTask;
+      await renderTask.promise;
+      renderTaskRef.current = null; // Clear after successful render
       setError(null);
     } catch (renderError: any) {
       console.error('FSPModal: Error during page.render:', renderError);
@@ -174,11 +179,26 @@ const FullScreenPreviewModal: React.FC<FullScreenPreviewModalProps> = ({
   }, [isOpen, documentType, pdfFile, docxImageUrls, initialPage, t, pdfJsLibInstance]); 
 
   useEffect(() => {
+    // Function to cancel any ongoing render task
+    const cancelCurrentRenderTask = () => {
+      if (renderTaskRef.current) {
+        console.log('FSPModal: Cancelling previous render task');
+        renderTaskRef.current.cancel();
+        renderTaskRef.current = null;
+      }
+    };
+
     if (isOpen && documentType === 'pdf' && pdfDoc && currentPage > 0 && currentPage <= numPages && pdfJsLibInstance) {
+      cancelCurrentRenderTask(); // Cancel before starting a new one
       renderPdfPage(pdfDoc, currentPage);
     }
+
+    return () => {
+      // Cleanup when effect dependencies change or component unmounts
+      cancelCurrentRenderTask();
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, pdfDoc, isOpen, documentType, pdfJsLibInstance]); // Added pdfJsLibInstance
+  }, [currentPage, pdfDoc, isOpen, documentType, pdfJsLibInstance]); 
 
   const handlePrevPage = () => {
     if (currentPage > 1) {
