@@ -1,6 +1,6 @@
 // src/services/apiService.js
 
-export const API_BASE_URL = 'http://localhost:5000';
+export const API_BASE_URL = 'https://fd47-223-108-52-246.ngrok-free.app';
 
 /**
  * Helper function to handle XHR requests for file uploads.
