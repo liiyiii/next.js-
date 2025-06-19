@@ -208,7 +208,7 @@ def generate_docx_previews(docx_path: Path, output_dir: Path, conversion_id: str
 
         for i, image_path_obj in enumerate(images): # images is a list of Path objects to the saved images
             # image_path_obj is the absolute path to the image. We need its filename.
-            image_filename = image_path_obj.name
+            image_filename = os.path.basename(image_path_obj.filename)
             preview_image_urls.append(f"/files/{conversion_id}/{image_filename}")
             print(f"Generated preview image: {image_filename} with URL {preview_image_urls[-1]}")
             if i + 1 >= max_pages: # Ensure we don't generate more than max_pages
