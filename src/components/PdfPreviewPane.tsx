@@ -124,10 +124,10 @@ const PdfPreviewPane: React.FC<PdfPreviewPaneProps> = ({ file, onPreviewClick, p
   return (
     <div 
       onClick={onPreviewClick} 
-      className="pdf-preview-pane p-2 border border-gray-700 rounded-md bg-gray-900 min-h-[300px] md:min-h-[400px] flex items-center justify-center cursor-pointer overflow-hidden"
+      className="pdf-preview-pane p-2 border border-gray-700 rounded-md bg-gray-900 min-h-[300px] md:min-h-[400px] flex items-center justify-center cursor-pointer overflow-hidden h-full"
       style={{ maxWidth: '100%' }} 
     >
-      <canvas ref={canvasRef} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}></canvas>
+      <canvas ref={canvasRef} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', height: '100%' }}></canvas>
       {!file && !isLoading && !error && (
         <p className="text-gray-500" id={placeholderId || 'pdf-preview-placeholder-default'}>
           {t('editingPlaceholder')} 
