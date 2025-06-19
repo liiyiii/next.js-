@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 // import PdfPreviewPane from './PdfPreviewPane'; // Removed static import
 import DocxPreviewPane from './DocxPreviewPane'; 
 import { Download } from 'lucide-react'; 
+import { API_BASE_URL } from '@/services/apiService';
 
 // Dynamically import PdfPreviewPane with SSR disabled
 const PdfPreviewPaneWithNoSSR = dynamic(
@@ -35,6 +36,7 @@ const PreviewArea: React.FC<PreviewAreaProps> = ({
   isLoading,
   conversionHasOccurred,
 }) => {
+  // console.log('PreviewArea: Received props - docxPreviewImageUrls:', docxPreviewImageUrls, 'uploadedPdfFile:', uploadedPdfFile, 'conversionHasOccurred:', conversionHasOccurred); // Removed
   const { t } = useLanguage();
 
   const handleDownload = async () => {
@@ -45,7 +47,7 @@ const PreviewArea: React.FC<PreviewAreaProps> = ({
       }
 
       // 构建完整的下载URL
-      const fullUrl = `${window.location.origin}${docxDownloadUrl}`;
+      const fullUrl = `${API_BASE_URL}${docxDownloadUrl}`;
       console.log('尝试下载文件:', fullUrl);
 
       // 先检查文件是否存在
@@ -71,7 +73,7 @@ const PreviewArea: React.FC<PreviewAreaProps> = ({
       document.body.removeChild(link);
     } catch (error) {
       console.error('下载文件时出错:', error);
-      alert('下载文件时出错，请稍后重试');
+      // alert('下载文件时出错，请稍后重试'); // Removed alert
     }
   };
 
@@ -102,16 +104,20 @@ const PreviewArea: React.FC<PreviewAreaProps> = ({
 
           {conversionHasOccurred && !isLoading && (
             <div className="flex flex-col md:flex-row gap-4 mb-6">
-              <PdfPreviewPaneWithNoSSR 
-                file={uploadedPdfFile} 
-                onPreviewClick={onPdfPaneClick} 
-                placeholderId="pdf-preview-placeholder-in-area" 
-              />
-              <DocxPreviewPane 
-                previewImageUrls={docxPreviewImageUrls} 
-                onPreviewClick={onDocxPaneClick}
-                placeholderId="docx-preview-placeholder-in-area"
-              />
+              <div className="flex-1 w-full md:w-1/2">
+                <PdfPreviewPaneWithNoSSR 
+                  file={uploadedPdfFile} 
+                  onPreviewClick={onPdfPaneClick} 
+                  placeholderId="pdf-preview-placeholder-in-area" 
+                />
+              </div>
+              <div className="flex-1 w-full md:w-1/2">
+                <DocxPreviewPane 
+                  previewImageUrls={docxPreviewImageUrls} 
+                  onPreviewClick={onDocxPaneClick}
+                  placeholderId="docx-preview-placeholder-in-area"
+                />
+              </div>
             </div>
           )}
           
