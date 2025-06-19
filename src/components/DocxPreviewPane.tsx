@@ -36,6 +36,7 @@ const DocxPreviewPane: React.FC<DocxPreviewPaneProps> = ({
           alt={t('docxPreviewAltText')}
           width={500} // Provide a base width, Next/Image needs this unless fill is true
           height={700} // Provide a base height
+          unoptimized={true}
           style={{ 
             maxWidth: '100%', 
             maxHeight: '100%', 
