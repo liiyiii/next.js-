@@ -111,3 +111,130 @@ export async function convertImageOcrPdf(pdfFile, onUploadProgress) {
   const endpointUrl = `${API_BASE_URL}/convert_image_ocr`;
   return performPdfConversionRequest(endpointUrl, pdfFile, onUploadProgress);
 }
+
+/**
+ * Performs OCR on an entire image (page).
+ * @param {File} imageFile - The image file (e.g., from a PDF page canvas) to perform OCR on.
+ * @param {(progress: number) => void} [onUploadProgress] - Optional callback for upload progress.
+ * @returns {Promise<any>} - Promise resolving with OCR results (e.g., text blocks with coordinates).
+ */
+export async function ocrFullPage(imageFile, onUploadProgress) {
+  const endpointUrl = `${API_BASE_URL}/api/ocr_full_page`; // Endpoint based on plan assumption
+  // We need a generic request function if the payload isn't always 'pdf_file'
+  // For now, let's adapt performPdfConversionRequest or create a new one.
+  // Assuming the backend expects 'image_file' for this endpoint.
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', endpointUrl, true);
+
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const percentage = Math.round((event.loaded * 100) / event.total);
+        if (onUploadProgress) {
+          onUploadProgress(percentage);
+        }
+      }
+    };
+
+    xhr.onload = () => {
+      try {
+        const responseText = xhr.responseText;
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const responseJson = JSON.parse(responseText);
+            resolve(responseJson);
+          } catch (e) {
+            console.warn('API Service (ocrFullPage): Response was 2xx but not valid JSON. ResponseText:', responseText);
+            reject({ status: xhr.status, message: 'Response was successful but not valid JSON: ' + responseText, errorObject: e });
+          }
+        } else {
+          let errorMessage = xhr.statusText || 'Unknown error';
+          try {
+            const errorJson = JSON.parse(responseText);
+            errorMessage = errorJson.error || errorJson.message || errorMessage;
+          } catch (e) {
+            if(responseText) errorMessage = responseText;
+          }
+          reject({ status: xhr.status, message: errorMessage, response: responseText });
+        }
+      } catch (e) {
+        reject({ status: xhr.status, message: 'Failed to process response: ' + xhr.responseText, errorObject: e });
+      }
+    };
+
+    xhr.onerror = () => {
+      reject({ status: xhr.status, message: 'Network error or CORS issue.' });
+    };
+    xhr.onabort = () => {
+      reject({ status: 0, message: 'Request aborted.' });
+    };
+
+    const formData = new FormData();
+    formData.append('image_file', imageFile, imageFile.name || 'page_image.png'); // Send the image file
+    xhr.send(formData);
+  });
+}
+
+
+/**
+ * Performs OCR on a specific region of an image.
+ * @param {File} imageFile - The image file.
+ * @param {{x: number, y: number, width: number, height: number}} region - The coordinates of the region.
+ * @param {(progress: number) => void} [onUploadProgress] - Optional callback for upload progress.
+ * @returns {Promise<any>} - Promise resolving with OCR result for the region.
+ */
+export async function ocrRegion(imageFile, region, onUploadProgress) {
+  const endpointUrl = `${API_BASE_URL}/api/ocr_region`; // Endpoint based on plan assumption
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', endpointUrl, true);
+
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const percentage = Math.round((event.loaded * 100) / event.total);
+        if (onUploadProgress) {
+          onUploadProgress(percentage);
+        }
+      }
+    };
+
+    xhr.onload = () => {
+      try {
+        const responseText = xhr.responseText;
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const responseJson = JSON.parse(responseText);
+            resolve(responseJson);
+          } catch (e) {
+            console.warn('API Service (ocrRegion): Response was 2xx but not valid JSON. ResponseText:', responseText);
+            reject({ status: xhr.status, message: 'Response was successful but not valid JSON: ' + responseText, errorObject: e });
+          }
+        } else {
+          let errorMessage = xhr.statusText || 'Unknown error';
+          try {
+            const errorJson = JSON.parse(responseText);
+            errorMessage = errorJson.error || errorJson.message || errorMessage;
+          } catch (e) {
+            if(responseText) errorMessage = responseText;
+          }
+          reject({ status: xhr.status, message: errorMessage, response: responseText });
+        }
+      } catch (e) {
+        reject({ status: xhr.status, message: 'Failed to process response: ' + xhr.responseText, errorObject: e });
+      }
+    };
+
+    xhr.onerror = () => {
+      reject({ status: xhr.status, message: 'Network error or CORS issue.' });
+    };
+    xhr.onabort = () => {
+      reject({ status: 0, message: 'Request aborted.' });
+    };
+
+    const formData = new FormData();
+    formData.append('image_file', imageFile, imageFile.name || 'page_image.png');
+    formData.append('region', JSON.stringify(region)); // Send region data as a JSON string
+    xhr.send(formData);
+  });
+}

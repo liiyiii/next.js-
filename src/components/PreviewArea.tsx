@@ -25,6 +25,7 @@ interface PreviewAreaProps {
   onDocxPaneClick: () => void;
   isLoading: boolean;
   conversionHasOccurred: boolean;
+  onEnterEditMode?: (file: File, pageNumber: number) => void; // Optional: Callback to enter edit mode for a specific PDF page
 }
 
 const PreviewArea: React.FC<PreviewAreaProps> = ({
@@ -35,9 +36,18 @@ const PreviewArea: React.FC<PreviewAreaProps> = ({
   onDocxPaneClick,
   isLoading,
   conversionHasOccurred,
+  onEnterEditMode,
 }) => {
   // console.log('PreviewArea: Received props - docxPreviewImageUrls:', docxPreviewImageUrls, 'uploadedPdfFile:', uploadedPdfFile, 'conversionHasOccurred:', conversionHasOccurred); // Removed
   const { t } = useLanguage();
+
+  const handleEnterEditMode = () => {
+    if (uploadedPdfFile && onEnterEditMode) {
+      // For now, let's assume we edit the first page.
+      // Later, we might need a way for the user to select a page.
+      onEnterEditMode(uploadedPdfFile, 1);
+    }
+  };
 
   const handleDownload = async () => {
     try {
@@ -124,8 +134,17 @@ const PreviewArea: React.FC<PreviewAreaProps> = ({
           {/* The general placeholder text from 3.html's #editing-placeholder-text is now handled by the !conversionHasOccurred block */}
           
           {showDownloadButton && (
-            <div id="download-edited-container" className="text-center mt-10"> 
-              <button 
+            <div id="download-edited-container" className="text-center mt-10">
+              {onEnterEditMode && uploadedPdfFile && conversionHasOccurred && !isLoading && (
+                <button
+                  id="enter-edit-mode-btn"
+                  onClick={handleEnterEditMode}
+                  className="btn bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors duration-300 shadow-lg mr-4 transform hover:scale-105"
+                >
+                  {t('enterEditModeBtn') || '高级编辑'} {/* Fallback text if translation key is missing */}
+                </button>
+              )}
+              <button
                 id="download-converted-docx-btn" // More specific ID
                 onClick={handleDownload}
                 className="btn bg-green-600 text-white px-10 py-4 rounded-lg text-xl font-semibold hover:bg-green-700 transition-colors duration-300 shadow-lg flex items-center justify-center mx-auto transform hover:scale-105"

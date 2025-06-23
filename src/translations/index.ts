@@ -119,6 +119,26 @@ export const translations = {
         previewOrEditBtn: "Preview or Edit",
         downloadConvertedFileInSectionBtn: "Download Converted File",
         downloadUrlNotReady: "Download URL is not available. Please try again or re-convert.",
+        enterEditModeBtn: "Advanced Edit", // New Key for Edit Mode Button
+        loadingPageForEditing: "Loading page for editing...", // New Key
+        errorLoadingPage: "Error loading page:", // New Key
+        goBackButton: "Go Back", // New Key
+        noPageToDisplay: "No page image to display. Please ensure the PDF was processed correctly.", // New Key
+        drawSelectionBoxBtn: "Draw Selection Box", // New Key
+        finishEditingBtn: "Finish Editing & Exit", // New Key
+        performingOcr: "Performing OCR...", // New Key
+        ocrFailedError: "OCR Failed", // New Key
+        cancelDrawModeBtn: "Cancel Drawing", // New Key
+        ocrSelectedRegionBtn: "OCR Selected Region", // New Key
+        noRegionSelectedError: "No region selected for OCR.", // New Key
+        ocrRegionSuccess: "Region OCR successful!", // New Key
+        invalidOcrRegionResponse: "Invalid OCR response for region.", // New Key
+        ocrRegionFailedError: "Failed to perform OCR on the selected region.", // New Key
+        downloadEditedImageBtn: "Download Edited Image", // New Key
+        cannotDownloadNoImage: "Cannot download: Image not loaded.", // New Key
+        cannotCreateCanvasError: "Cannot download: Failed to create canvas context.", // New Key
+        imageDownloadSuccess: "Image download started!", // New Key
+        imageLoadFailedForDownload: "Failed to load image for download.", // New Key
     },
     zh: {
         logo: "PDF转换工具",
@@ -239,6 +259,26 @@ export const translations = {
         previewOrEditBtn: "预览或编辑",
         downloadConvertedFileInSectionBtn: "下载转换后的文件",
         downloadUrlNotReady: "下载链接不可用。请重试或重新转换文件。",
+        enterEditModeBtn: "高级编辑", // New Key for Edit Mode Button - Chinese
+        loadingPageForEditing: "正在加载编辑页面...", // New Key - Chinese
+        errorLoadingPage: "加载页面时出错:", // New Key - Chinese
+        goBackButton: "返回", // New Key - Chinese
+        noPageToDisplay: "无法显示页面图像。请确保PDF已正确处理。", // New Key - Chinese
+        drawSelectionBoxBtn: "框选识别", // New Key - Chinese
+        finishEditingBtn: "完成编辑并退出", // New Key - Chinese
+        performingOcr: "正在执行OCR...", // New Key - Chinese
+        ocrFailedError: "OCR识别失败", // New Key - Chinese
+        cancelDrawModeBtn: "取消框选", // New Key - Chinese
+        ocrSelectedRegionBtn: "识别选中区域", // New Key - Chinese
+        noRegionSelectedError: "未选择OCR区域。", // New Key - Chinese
+        ocrRegionSuccess: "区域OCR成功！", // New Key - Chinese
+        invalidOcrRegionResponse: "无效的区域OCR响应。", // New Key - Chinese
+        ocrRegionFailedError: "对选中区域执行OCR失败。", // New Key - Chinese
+        downloadEditedImageBtn: "下载编辑后的图片", // New Key - Chinese
+        cannotDownloadNoImage: "无法下载：图片未加载。", // New Key - Chinese
+        cannotCreateCanvasError: "无法下载：创建画布失败。", // New Key - Chinese
+        imageDownloadSuccess: "图片下载已开始！", // New Key - Chinese
+        imageLoadFailedForDownload: "加载图片以下载失败。", // New Key - Chinese
     },
 };
 

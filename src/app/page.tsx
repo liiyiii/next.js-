@@ -71,6 +71,25 @@ export default function Home() {
   const [currentDocxImagesForFullScreen, setCurrentDocxImagesForFullScreen] = useState<string[] | null>(null);
   const [initialFullScreenPage, setInitialFullScreenPage] = useState<number>(1);
 
+  // State for the new Advanced Edit Mode
+  const [isEditModeActive, setIsEditModeActive] = useState<boolean>(false);
+  const [fileForEditMode, setFileForEditMode] = useState<File | null>(null);
+  const [pageNumberForEditMode, setPageNumberForEditMode] = useState<number>(1);
+
+  // Dynamically import AdvancedEditInterface
+  const AdvancedEditInterface = dynamic(() => import('@/components/AdvancedEditInterface'), {
+    ssr: false,
+    loading: () => (
+      <div className="min-h-screen bg-gray-950 text-gray-200 font-sans flex flex-col items-center justify-center">
+        <Header />
+        <main className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-loader-2 animate-spin text-purple-400 mr-3"></svg>
+          <p className="text-xl text-gray-300">Loading Advanced Editor...</p>
+        </main>
+        <Footer />
+      </div>
+    ),
+  });
 
   useEffect(() => {
     // @ts-ignore
@@ -161,7 +180,38 @@ export default function Home() {
     }
   };
 
+  const handleEnterEditModeCallback = (file: File, pageNumber: number) => {
+    console.log('Entering edit mode for file:', file.name, 'Page:', pageNumber);
+    setFileForEditMode(file);
+    setPageNumberForEditMode(pageNumber);
+    setIsEditModeActive(true);
+    // Potentially hide other sections or show a dedicated editing UI
+  };
+
+  const handleExitEditMode = () => {
+    setIsEditModeActive(false);
+    setFileForEditMode(null);
+    // Reset any edit-specific states
+  };
+
   console.log('Page: Rendering with globalDocxDownloadUrl:', globalDocxDownloadUrl);
+
+  if (isEditModeActive && fileForEditMode) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-gray-200 font-sans flex flex-col">
+        <Header />
+        <main className="flex-grow container mx-auto px-4 py-8 flex flex-col items-center">
+          {/* <h1 className="text-3xl font-bold text-purple-400 mb-6">Advanced Editing Mode</h1> */}
+          <AdvancedEditInterface
+            file={fileForEditMode}
+            pageNumber={pageNumberForEditMode}
+            onExit={handleExitEditMode}
+          />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -234,9 +284,6 @@ export default function Home() {
             conversionAreaId="digital-conversion-area"
             convertBtnId="digital-convert-btn"
             loadingSpinnerId="digital-loading-spinner"
-            // downloadConvertedBtnId prop removed
-            // editOnlineBtnId prop removed
-            // summarizeBtnId prop removed (as it was removed in ConverterSection)
             progressBarContainerId="digital-progress-bar-container"
             progressBarId="digital-progress-bar"
             statusMessageId="digital-status-message"
@@ -246,8 +293,7 @@ export default function Home() {
             onConversionStart={handleConversionStart}
             onConversionSuccess={handleConversionSuccess} 
             onConversionError={handleConversionError}
-            docxDownloadUrl={globalDocxDownloadUrl} // Added prop
-            // showGlobalLoading={activeConverter === 'digital' && globalIsLoading}
+            docxDownloadUrl={globalDocxDownloadUrl}
           />
 
           <ConverterSection
@@ -260,9 +306,6 @@ export default function Home() {
             conversionAreaId="image-conversion-area"
             convertBtnId="image-convert-btn"
             loadingSpinnerId="image-loading-spinner"
-            // downloadConvertedBtnId prop removed
-            // editOnlineBtnId prop removed
-            // summarizeBtnId prop removed
             progressBarContainerId="image-progress-bar-container"
             progressBarId="image-progress-bar"
             statusMessageId="image-status-message"
@@ -272,8 +315,7 @@ export default function Home() {
             onConversionStart={handleConversionStart}
             onConversionSuccess={handleConversionSuccess}
             onConversionError={handleConversionError}
-            docxDownloadUrl={globalDocxDownloadUrl} // Added prop
-            // showGlobalLoading={activeConverter === 'image' && globalIsLoading}
+            docxDownloadUrl={globalDocxDownloadUrl}
           />
 
           <ShowcaseSection />
@@ -285,6 +327,7 @@ export default function Home() {
             conversionHasOccurred={globalConversionHasOccurred}
             onPdfPaneClick={() => openPdfInFullScreen(globalUploadedPdfFile)}
             onDocxPaneClick={() => openDocxInFullScreen(globalDocxPreviewImageUrls)}
+            onEnterEditMode={handleEnterEditModeCallback}
           />
 
           <section id="pricing" className="py-20 bg-gray-800">
