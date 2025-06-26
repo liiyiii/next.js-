@@ -4,7 +4,7 @@
 import React from 'react';
 import { Editor } from '@tiptap/react';
 import {
-  Bold, Italic, Underline, Strikethrough, Highlight as HighlightIcon, Pilcrow,
+  Bold, Italic, Underline, Strikethrough, Highlighter as HighlightIcon, Pilcrow, // Changed Highlight to Highlighter
   List, ListOrdered, Palette, CaseSensitive, PilcrowLeft, PilcrowRight, RemoveFormatting, Undo, Redo, Heading1, Heading2, Heading3, Heading4
 } from 'lucide-react'; // Using Pilcrow for Paragraph, CaseSensitive for Font Family
 
@@ -64,21 +64,23 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
 
 
       {/* Font Family */}
-      <Select
-        onValueChange={(value) => editor.chain().focus().setFontFamily(value).run()}
-        value={editor.isActive('textStyle') ? editor.getAttributes('textStyle').fontFamily || 'Arial' : 'Arial'}
-      >
-        <SelectTrigger className="p-1.5 h-auto bg-gray-500 border-gray-500 text-white hover:bg-purple-400 w-auto text-xs min-w-[100px]" title="Font Family">
-          <SelectValue placeholder="Font" />
-        </SelectTrigger>
-        <SelectContent className="bg-gray-600 text-white border-gray-500">
+      <div className="relative inline-block">
+        <select
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => editor.chain().focus().setFontFamily(e.target.value).run()}
+          value={editor.isActive('textStyle') ? editor.getAttributes('textStyle').fontFamily || 'Arial' : 'Arial'}
+          className="p-1.5 h-auto bg-gray-500 border-gray-500 text-white hover:bg-purple-400 w-auto text-xs min-w-[100px] rounded appearance-none focus:outline-none focus:ring-2 focus:ring-purple-400"
+          title="Font Family"
+        >
           {fontFamilies.map(font => (
-            <SelectItem key={font} value={font} className="hover:bg-purple-500 focus:bg-purple-500 text-xs">
-              <span style={{ fontFamily: font }}>{font}</span>
-            </SelectItem>
+            <option key={font} value={font} style={{ fontFamily: font, backgroundColor: '#4A5568' /* bg-gray-700 */ }}>
+              {font}
+            </option>
           ))}
-        </SelectContent>
-      </Select>
+        </select>
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-300">
+          <CaseSensitive size={14} /> {/* Using CaseSensitive as a dropdown indicator */}
+        </div>
+      </div>
 
       {/* Text Color */}
        <label htmlFor="text-color-picker" className="p-1.5 rounded bg-gray-500 hover:bg-purple-400 cursor-pointer" title="Text Color">

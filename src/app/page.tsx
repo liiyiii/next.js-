@@ -2,7 +2,8 @@
 'use client';
 
 import Head from 'next/head';
-import { useEffect, useState } from 'react'; 
+import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic'; // Import dynamic
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ConverterSection from '@/components/ConverterSection';

@@ -3,17 +3,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-// We'll need pdfjs-dist to render PDF page to image
-// Ensure PdfJsWorkerConfig is loaded globally or manage worker source here
-// For simplicity, assuming global window.pdfjsLib is available via DynamicPdfJsWorkerConfigLoader in layout or page
-// import * as pdfjsLib from 'pdfjs-dist';
-import { ocrFullPage, ocrRegion } from '@/services/apiService'; // Import OCR functions
-import { useAlert } from '@/contexts/AlertContext'; // For showing alerts
-// import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'; // Replaced with custom or simpler solution
-// import { Button } from '@/components/ui/button'; // Replaced with standard buttons
-// import { Input } from '@/components/ui/input'; // Replaced with standard inputs
-// import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'; // Replaced with standard select
-import { Trash2, Type, Palette, Move, Maximize2, Minimize2, Edit3, CheckSquare, Square, ZoomIn, ZoomOut, PaletteIcon, BaselineIcon, PilcrowIcon, FontAwesomeIcon } from 'lucide-react'; // Icons. PaletteIcon for color, BaselineIcon for font size.
+import { ocrFullPage, ocrRegion } from '@/services/apiService';
+import { useAlert } from '@/contexts/AlertContext';
+import { Trash2, Type, Palette, Move, Download, Edit3, CheckSquare, Square, ZoomIn, ZoomOut, PaletteIcon, BaselineIcon, PilcrowIcon } from 'lucide-react';
 import TiptapEditor from './TiptapEditor';
 import EditorToolbar from './EditorToolbar';
 import { Editor } from '@tiptap/react';
@@ -30,8 +22,8 @@ interface TextBlock {
   text: string;
   x: number;
   y: number;
-  width?: number; // Optional, might be auto-sized by content
-  height?: number; // Optional
+  width?: number;
+  height?: number;
   fontSize: number;
   fontFamily: string;
   color: string;
@@ -40,7 +32,6 @@ interface TextBlock {
 
 const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pageNumber, onExit }) => {
   const { t } = useLanguage();
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoadingPage, setIsLoadingPage] = useState<boolean>(true);
   const [errorLoadingPage, setErrorLoadingPage] = useState<string | null>(null);
@@ -52,18 +43,17 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
   const [ocrError, setOcrError] = useState<string | null>(null);
 
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
-  const [isDrawingBox, setIsDrawingBox] = useState<boolean>(false); // If true, user is currently drawing a box
-  const [selectionBox, setSelectionBox] = useState<{x: number, y: number, width: number, height: number} | null>(null); // Stores the final box
-  const [tempBox, setTempBox] = useState<{x: number, y: number, width: number, height: number} | null>(null); // Stores the box during drawing
-  const drawStartPos = useRef<{x: number, y: number} | null>(null); // Starting position of the drag
+  const [isDrawingBox, setIsDrawingBox] = useState<boolean>(false);
+  const [selectionBox, setSelectionBox] = useState<{x: number, y: number, width: number, height: number} | null>(null);
+  const [tempBox, setTempBox] = useState<{x: number, y: number, width: number, height: number} | null>(null);
+  const drawStartPos = useRef<{x: number, y: number} | null>(null);
   const imageContainerRef = useRef<HTMLDivElement | null>(null);
-  const [isDrawModeEnabled, setIsDrawModeEnabled] = useState<boolean>(false); // To toggle drawing mode via button
-  const editorRef = useRef<Editor | null>(null); // Ref to access Tiptap editor instance
-  const [editingBlockContent, setEditingBlockContent] = useState<string>(''); // HTML content for the Tiptap editor
-  const [activeDragHandle, setActiveDragHandle] = useState<string | null>(null); // e.g., 'br' for bottom-right
+  const [isDrawModeEnabled, setIsDrawModeEnabled] = useState<boolean>(false);
+  const editorRef = useRef<Editor | null>(null);
+  const [editingBlockContent, setEditingBlockContent] = useState<string>('');
+  const [activeDragHandle, setActiveDragHandle] = useState<string | null>(null);
   const dragStartBlockPos = useRef<{x: number, y: number, width: number, height: number, mouseX: number, mouseY: number} | null>(null);
 
-  // Contextual Toolbar State
   const [toolbarPosition, setToolbarPosition] = useState<{ top: number, left: number } | null>(null);
   const [showContextualToolbar, setShowContextualToolbar] = useState<boolean>(false);
   const [imageDimensions, setImageDimensions] = useState<{width: number, height: number} | null>(null);
@@ -74,7 +64,6 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
       setPdfJsLibInstance((window as any).pdfjsLib);
     } else {
       console.warn("PDF.js library not immediately available in AdvancedEditInterface.");
-      // Wait a bit for it to load, then set error if still not available
       const timer = setTimeout(() => {
         if (!(window as any).pdfjsLib) {
           setErrorLoadingPage("PDF library failed to load. Please ensure PDF.js worker is configured.");
@@ -100,12 +89,12 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
     reader.onload = async (e) => {
       if (e.target?.result) {
         const typedArray = new Uint8Array(e.target.result as ArrayBuffer);
-        let pdfDoc: any = null; // pdfjsLib.PDFDocumentProxy
+        let pdfDoc: any = null;
         try {
           pdfDoc = await pdfJsLibInstance.getDocument({ data: typedArray }).promise;
           if (pageNumber > 0 && pageNumber <= pdfDoc.numPages) {
             const page = await pdfDoc.getPage(pageNumber);
-            const viewport = page.getViewport({ scale: 1.5 }); // Use a reasonable scale
+            const viewport = page.getViewport({ scale: 1.5 });
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
             canvas.height = viewport.height;
@@ -113,7 +102,7 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
 
             if (context) {
               await page.render({ canvasContext: context, viewport: viewport }).promise;
-              setImageUrl(canvas.toDataURL('image/png')); // Explicitly set to PNG
+              setImageUrl(canvas.toDataURL('image/png'));
               setImageDimensions({ width: canvas.width, height: canvas.height });
             } else {
               throw new Error("Failed to get canvas context");
@@ -138,10 +127,9 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
       setIsLoadingPage(false);
     };
     reader.readAsArrayBuffer(file);
-  }, [file, pageNumber, pdfJsLibInstance, errorLoadingPage]); // Added errorLoadingPage to dependencies
+  }, [file, pageNumber, pdfJsLibInstance, errorLoadingPage]);
 
 
-  // Function to convert dataURL to File object
   const dataURLtoFile = (dataurl: string, filename: string): File | null => {
     const arr = dataurl.split(',');
     if (arr.length < 2) return null;
@@ -157,9 +145,8 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
     return new File([u8arr], filename, { type: mime });
   };
 
-  // Effect to run OCR when imageUrl is available
   useEffect(() => {
-    if (imageUrl && !textBlocks.length && !isOcrLoading && !isLoadingPage) { // Ensure page is fully loaded
+    if (imageUrl && !textBlocks.length && !isOcrLoading && !isLoadingPage) {
       const imageFile = dataURLtoFile(imageUrl, `page_${pageNumber}_image.png`);
       if (imageFile) {
         handleFullPageOcr(imageFile);
@@ -184,9 +171,9 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
           y: block.y,
           width: block.width,
           height: block.height,
-          fontSize: 16, // Default
-          fontFamily: 'Arial', // Default
-          color: '#000000', // Default
+          fontSize: 16,
+          fontFamily: 'Arial',
+          color: '#000000',
           isEditing: false,
         }));
         setTextBlocks(newTextBlocks);
@@ -202,6 +189,7 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
       setIsOcrLoading(false);
     }
   };
+
   const handleDownloadImage = () => {
     if (!imageUrl || !imageDimensions) {
         showAlert(t('cannotDownloadNoImage') || "Cannot download: Image not loaded.", "error");
@@ -223,49 +211,47 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
         ctx.drawImage(img, 0, 0, imageDimensions.width, imageDimensions.height);
 
         textBlocks.forEach(block => {
-            // This is a simplified rendering. For accurate HTML rendering,
-            // one might need to use a library or a more complex SVG foreignObject approach.
             ctx.font = `${block.fontSize}px ${block.fontFamily}`;
             ctx.fillStyle = block.color;
             ctx.textAlign = 'left';
             ctx.textBaseline = 'top';
 
-            // Basic text wrapping (very naive)
-            const lines = [];
-            let currentLine = '';
-            // Strip HTML for canvas text drawing, split by actual newlines or <br> if Tiptap outputs them for hard breaks.
-            // Tiptap content is HTML, so need to be careful.
-            // A robust solution would render HTML to an offscreen element and then draw that, or use an SVG with foreignObject.
-            // This is a placeholder for basic multiline.
-            const plainText = editorRef.current?.state.doc.textBetween(0, editorRef.current.state.doc.content.size, "\n\n") || block.text.replace(/<br\s*\/?>/gi, '\n').replace(/<p><\/p>/gi, '\n').replace(/<[^>]+>/g, '');
-            const blockLines = plainText.split('\n');
+            let plainText = block.text;
+            if (editorRef.current && selectedBlockId === block.id && block.isEditing) {
+                plainText = editorRef.current.getText({ blockSeparator: '\n' });
+            } else {
+                 const tempDiv = document.createElement('div');
+                 tempDiv.innerHTML = block.text;
+                 plainText = tempDiv.textContent || tempDiv.innerText || "";
+            }
 
-            blockLines.forEach((line, index) => {
-                 // Approximate line height
-                const lineHeight = block.fontSize * 1.2;
-                // CanvasRenderingContext2D.fillText(text: string, x: number, y: number, maxWidth?: number): void;
-                // We need to handle wrapping if block.width is set
+            const lines = plainText.split('\n');
+            let currentYOffset = 0;
+            const lineHeight = block.fontSize * 1.2;
+
+            lines.forEach(line => {
                 if (block.width) {
-                    // Naive word wrapping for canvas:
                     let words = line.split(' ');
                     let currentCanvasLine = '';
-                    let currentY = block.y + (index * lineHeight);
+                    let lineStartX = block.x;
+                    let lineStartY = block.y + currentYOffset;
+
                     for (let n = 0; n < words.length; n++) {
                         let testLine = currentCanvasLine + words[n] + ' ';
                         let metrics = ctx.measureText(testLine);
-                        let testWidth = metrics.width;
-                        if (testWidth > block.width && n > 0) {
-                            ctx.fillText(currentCanvasLine, block.x, currentY);
+                        if (metrics.width > block.width && n > 0) {
+                            ctx.fillText(currentCanvasLine.trim(), lineStartX, lineStartY);
                             currentCanvasLine = words[n] + ' ';
-                            currentY += lineHeight;
+                            lineStartY += lineHeight;
                         } else {
                             currentCanvasLine = testLine;
                         }
                     }
-                    ctx.fillText(currentCanvasLine, block.x, currentY);
-
+                    ctx.fillText(currentCanvasLine.trim(), lineStartX, lineStartY);
+                    currentYOffset = (lineStartY - block.y) + lineHeight;
                 } else {
-                     ctx.fillText(line, block.x, block.y + (index * lineHeight));
+                     ctx.fillText(line, block.x, block.y + currentYOffset);
+                     currentYOffset += lineHeight;
                 }
             });
         });
@@ -282,11 +268,12 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
     img.onerror = () => {
         showAlert(t('imageLoadFailedForDownload') || "Failed to load image for download.", "error");
     };
-    img.src = imageUrl; // Ensure imageUrl is the up-to-date, full-quality image DataURL
+    img.src = imageUrl;
 };
+
   const handleMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
     if (!isDrawModeEnabled || !imageContainerRef.current) return;
-    event.preventDefault(); // Prevent text selection or image drag
+    event.preventDefault();
 
     const rect = imageContainerRef.current.getBoundingClientRect();
     const x = event.clientX - rect.left;
@@ -294,8 +281,8 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
 
     drawStartPos.current = { x, y };
     setIsDrawingBox(true);
-    setTempBox({ x, y, width: 0, height: 0 }); // Start with a zero-size box
-    setSelectionBox(null); // Clear previous final selection box
+    setTempBox({ x, y, width: 0, height: 0 });
+    setSelectionBox(null);
   };
 
   const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -322,69 +309,58 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
     event.preventDefault();
 
     setIsDrawingBox(false);
-    // Only set as final selectionBox if it has a meaningful size
     if (tempBox.width > 5 && tempBox.height > 5) {
         setSelectionBox(tempBox);
     } else {
-        setSelectionBox(null); // Discard tiny boxes
+        setSelectionBox(null);
     }
-    setTempBox(null); // Clear temporary box
+    setTempBox(null);
     drawStartPos.current = null;
-    // Don't disable draw mode here, let user draw multiple boxes or click OCR button
   };
 
   const handleMouseLeave = (event: React.MouseEvent<HTMLDivElement>) => {
-    // Optional: If user drags outside the container, cancel the current drawing
     if (isDrawingBox) {
         setIsDrawingBox(false);
         setTempBox(null);
         drawStartPos.current = null;
-        // setSelectionBox(null); // Or keep the last valid box if any? For now, clear.
     }
   };
 
   const handleSelectBlock = (blockId: string, event?: React.MouseEvent) => {
-    if (isDrawModeEnabled) return; // Don't select if in drawing mode
+    if (isDrawModeEnabled) return;
 
-    if (selectedBlockId === blockId && event) { // If already selected, could be a double click to edit
-        // handleDoubleClickToEdit(blockId); // Or simply let the main div onDoubleClick handle it
+    if (selectedBlockId === blockId && event) {
         return;
     }
 
     setSelectedBlockId(blockId);
     const block = textBlocks.find(b => b.id === blockId);
     if (block) {
-        setEditingBlockContent(block.text); // Initialize editor with block's current text (as HTML)
+        setEditingBlockContent(block.text);
 
-        // Position toolbar above the selected block
         if (imageContainerRef.current && event) {
             const containerRect = imageContainerRef.current.getBoundingClientRect();
-            const blockElement = event.currentTarget as HTMLDivElement; // Assuming event is from the block div
+            const blockElement = event.currentTarget as HTMLDivElement;
             const blockRect = blockElement.getBoundingClientRect();
 
-            // Calculate position relative to the image container for absolute positioning of toolbar
-            let top = blockRect.top - containerRect.top - 60; // 60px approx toolbar height + offset
-            if (top < 0) top = blockRect.bottom - containerRect.top + 10; // If too close to top, show below
+            let top = blockRect.top - containerRect.top - 60;
+            if (top < 0) top = blockRect.bottom - containerRect.top + 10;
 
             let left = blockRect.left - containerRect.left;
-            if (left + 300 > containerRect.width) { // Assuming toolbar width around 300px
+            if (left + 300 > containerRect.width) {
                 left = containerRect.width - 300;
             }
             if (left < 0) left = 0;
 
-
             setToolbarPosition({ top, left });
             setShowContextualToolbar(true);
-        } else if (block) { // Fallback if event is not available (e.g. programmatic selection)
-             setToolbarPosition({ top: block.y - 60, left: block.x }); // Position above
+        } else if (block) {
+             setToolbarPosition({ top: block.y - 60, left: block.x });
              setShowContextualToolbar(true);
         }
-
-
     } else {
         setShowContextualToolbar(false);
     }
-     // Ensure other modes are off
     setIsDrawModeEnabled(false);
     setSelectionBox(null);
   };
@@ -392,22 +368,18 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
   const handleDoubleClickToEdit = (blockId: string) => {
     if (isDrawModeEnabled) return;
     setTextBlocks(prev => prev.map(b => b.id === blockId ? { ...b, isEditing: true } : { ...b, isEditing: false }));
-    setSelectedBlockId(blockId); // Also select it
+    setSelectedBlockId(blockId);
     const block = textBlocks.find(b => b.id === blockId);
     if (block) {
-      setEditingBlockContent(block.text); // Load its HTML content into Tiptap state
-      setShowContextualToolbar(false); // Hide contextual toolbar when inline editing starts
+      setEditingBlockContent(block.text);
+      setShowContextualToolbar(false);
     }
   };
 
   const handleSaveBlockEdit = (blockId: string) => {
     setTextBlocks(prev => prev.map(b => b.id === blockId ? { ...b, text: editingBlockContent, isEditing: false } : b));
-    // setSelectedBlockId(null); // Deselect after saving, or keep selected?
-    // If keeping selected, re-show contextual toolbar
     const block = textBlocks.find(b => b.id === blockId);
     if (block) {
-        // Need to re-calculate toolbar position if block moved/resized
-        // For now, assume it's in place.
         setToolbarPosition({ top: block.y - 60, left: block.x });
         setShowContextualToolbar(true);
     }
@@ -415,8 +387,6 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
 
   const handleCancelBlockEdit = (blockId: string) => {
      setTextBlocks(prev => prev.map(b => b.id === blockId ? { ...b, isEditing: false } : b));
-     // setSelectedBlockId(null); // Deselect
-     // If keeping selected, re-show contextual toolbar
     const block = textBlocks.find(b => b.id === blockId);
     if (block) {
         setToolbarPosition({ top: block.y - 60, left: block.x });
@@ -436,24 +406,23 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
     }
   };
 
-  // Dragging and Resizing TextBlocks
     const handleBlockMouseDown = (e: React.MouseEvent<HTMLDivElement>, blockId: string, handleName?: string) => {
         if (isDrawModeEnabled) return;
-        e.stopPropagation(); // Prevent image container mousedown when interacting with block/handle
+        e.stopPropagation();
 
         const block = textBlocks.find(b => b.id === blockId);
         if (!block || block.isEditing) return;
 
-        setSelectedBlockId(blockId); // Select the block
-        handleSelectBlock(blockId, e); // Show toolbar
+        setSelectedBlockId(blockId);
+        handleSelectBlock(blockId, e);
 
         const mouseX = e.clientX;
         const mouseY = e.clientY;
 
-        if (handleName) { // Resizing
+        if (handleName) {
             setActiveDragHandle(handleName);
             dragStartBlockPos.current = { x: block.x, y: block.y, width: block.width || 0, height: block.height || 0, mouseX, mouseY };
-        } else { // Moving
+        } else {
             setActiveDragHandle('move');
             dragStartBlockPos.current = { x: block.x, y: block.y, width: block.width || 0, height: block.height || 0, mouseX, mouseY };
         }
@@ -471,7 +440,7 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
         if (activeDragHandle === 'move') {
             newX = x + dx;
             newY = y + dy;
-        } else { // Resizing based on handle
+        } else {
             if (activeDragHandle.includes('r')) newWidth = width + dx;
             if (activeDragHandle.includes('l')) {
                 newWidth = width - dx;
@@ -482,13 +451,11 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
                 newHeight = height - dy;
                 newY = y + dy;
             }
-            // Prevent negative width/height
             if (newWidth < 20) { newWidth = 20; if (activeDragHandle.includes('l')) newX = x + width - 20; }
             if (newHeight < 20) { newHeight = 20; if (activeDragHandle.includes('t')) newY = y + height - 20; }
         }
 
         setTextBlocks(prev => prev.map(b => b.id === selectedBlockId ? { ...b, x: newX, y: newY, width: newWidth, height: newHeight } : b));
-        // Update toolbar position while dragging/resizing
         if (toolbarPosition) {
              setToolbarPosition({ top: newY - 60, left: newX });
         }
@@ -506,7 +473,7 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
             document.removeEventListener('mousemove', handleGlobalMouseMove);
             document.removeEventListener('mouseup', handleGlobalMouseUp);
         };
-    }, [activeDragHandle]); // Re-bind if activeDragHandle changes, though its content matters more (handled by dragStartBlockPos)
+    }, [activeDragHandle]);
 
 
   const handleOcrSelectedRegion = async () => {
@@ -518,30 +485,28 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
     const imageFile = dataURLtoFile(imageUrl, `page_${pageNumber}_image.png`);
     if (!imageFile) {
       const errorMsg = "Failed to prepare image for OCR.";
-      setOcrError(errorMsg); // Show error near image as well
+      setOcrError(errorMsg);
       showAlert(errorMsg, "error");
       return;
     }
 
     setIsOcrLoading(true);
-    setOcrError(null); // Clear previous OCR errors
+    setOcrError(null);
 
     try {
-      // Adjust selectionBox coordinates if the displayed image is scaled
-      // For now, assuming selectionBox coordinates are relative to the full-sized image data sent to OCR
       const response = await ocrRegion(imageFile, selectionBox);
 
-      if (response && response.text) { // Assuming API returns { text: "recognized text" }
+      if (response && response.text) {
         const newBlock: TextBlock = {
           id: `tb-region-${Date.now()}`,
-          text: response.text,
-          x: selectionBox.x, // Position the new block at the selection box origin
+          text: `<p>${response.text.replace(/\n/g, '</p><p>')}</p>`,
+          x: selectionBox.x,
           y: selectionBox.y,
-          width: selectionBox.width, // Optionally use selection box width/height or let it auto-size
+          width: selectionBox.width,
           height: selectionBox.height,
-          fontSize: 16, // Default
-          fontFamily: 'Arial', // Default
-          color: '#0000FF', // Blue for region-ocr'd text, to differentiate
+          fontSize: 16,
+          fontFamily: 'Arial',
+          color: '#0000FF',
           isEditing: false,
         };
         setTextBlocks(prevBlocks => [...prevBlocks, newBlock]);
@@ -556,8 +521,8 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
       showAlert(errorMessage, "error");
     } finally {
       setIsOcrLoading(false);
-      setSelectionBox(null); // Clear the selection box after attempting OCR
-      setIsDrawModeEnabled(false); // Optionally disable draw mode
+      setSelectionBox(null);
+      setIsDrawModeEnabled(false);
     }
   };
 
@@ -603,7 +568,7 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
 
   return (
     <div className="w-full flex flex-col items-center">
-      {/* Toolbar (placeholder) */}
+      {/* Toolbar */}
       <div className="w-full bg-gray-700 p-2 mb-4 rounded-md shadow flex justify-start space-x-2">
         <button
           className={`px-3 py-1 text-white rounded text-sm ${isDrawModeEnabled ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'}`}
@@ -622,14 +587,13 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
           </button>
         )}
         <button
-            className="px-3 py-1 bg-teal-500 text-white rounded hover:bg-teal-600 text-sm ml-auto" // ml-auto to push it to the right
+            className="px-3 py-1 bg-teal-500 text-white rounded hover:bg-teal-600 text-sm ml-auto"
             onClick={handleDownloadImage}
             disabled={isOcrLoading || isLoadingPage || !imageUrl}
             title={t('downloadEditedImageBtn') || "Download Edited Image"}
         >
-            <Download size={18} /> {/* Assuming Download icon from lucide-react */}
+            <Download size={18} />
         </button>
-        {/* Add more tools here: Text tool, delete tool, etc. */}
       </div>
 
       {/* Image Display Area */}
@@ -640,11 +604,10 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave} // Optional: cancel drawing if mouse leaves container
+        onMouseLeave={handleMouseLeave}
       >
         <img src={imageUrl} alt={`Page ${pageNumber} from ${file.name}`} className="block max-w-full max-h-[80vh]" draggable="false" />
 
-        {/* Render TextBlocks */}
         {textBlocks.map(block => {
           if (block.isEditing && selectedBlockId === block.id) {
             return (
@@ -655,12 +618,12 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
                   left: `${block.x}px`,
                   top: `${block.y}px`,
                   width: block.width ? `${block.width}px` : 'auto',
-                  minWidth: '100px', // Min width for editor
+                  minWidth: '100px',
                   height: block.height ? `${block.height}px` : 'auto',
-                  minHeight: '50px', // Min height for editor
-                  zIndex: 10, // Ensure editor is on top
+                  minHeight: '50px',
+                  zIndex: 10,
                 }}
-                onClick={(e) => e.stopPropagation()} // Prevent image click-through
+                onClick={(e) => e.stopPropagation()}
               >
                 <EditorToolbar editor={editorRef.current} />
                 <TiptapEditor
@@ -675,7 +638,6 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
               </div>
             );
           }
-          // Non-editing display
           return (
             <div
               key={block.id}
@@ -693,29 +655,25 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
                 overflow: 'hidden',
                 whiteSpace: 'pre-wrap',
                 backgroundColor: selectedBlockId === block.id ? 'rgba(59, 130, 246, 0.1)' : 'rgba(255, 255, 0, 0.1)',
-                userSelect: 'none', // Prevent text selection when dragging
+                userSelect: 'none',
               }}
               onClick={(e) => handleSelectBlock(block.id, e)}
               onDoubleClick={() => handleDoubleClickToEdit(block.id)}
               onMouseDown={(e) => handleBlockMouseDown(e, block.id)}
             >
-              {/* Display HTML content safely or plain text */}
               <div dangerouslySetInnerHTML={{ __html: block.text }} />
               {selectedBlockId === block.id && !block.isEditing && (
                 <>
-                  {/* Resize Handles - Example for bottom-right */}
                   <div onMouseDown={(e) => handleBlockMouseDown(e, block.id, 'br')} className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-500 border border-white rounded-full cursor-se-resize"></div>
                   <div onMouseDown={(e) => handleBlockMouseDown(e, block.id, 'bl')} className="absolute -bottom-1 -left-1 w-3 h-3 bg-blue-500 border border-white rounded-full cursor-sw-resize"></div>
                   <div onMouseDown={(e) => handleBlockMouseDown(e, block.id, 'tr')} className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 border border-white rounded-full cursor-ne-resize"></div>
                   <div onMouseDown={(e) => handleBlockMouseDown(e, block.id, 'tl')} className="absolute -top-1 -left-1 w-3 h-3 bg-blue-500 border border-white rounded-full cursor-nw-resize"></div>
-                  {/* Add more handles (sides) as needed */}
                 </>
               )}
             </div>
           );
         })}
 
-        {/* Contextual Toolbar for non-editing selected block */}
         {showContextualToolbar && selectedBlockId && toolbarPosition && !textBlocks.find(b=>b.id===selectedBlockId)?.isEditing && (
           <div
             style={{
@@ -725,13 +683,12 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
               zIndex: 20,
             }}
             className="bg-gray-700 shadow-xl rounded-md"
-            // Prevent clicks on toolbar from deselecting block or triggering image events
             onMouseDown={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
           >
                 <EditorToolbar editor={editorRef.current} />
                  <button
-                    onClick={() => handleDeleteBlock(selectedBlockId!)} // selectedBlockId is checked before rendering this
+                    onClick={() => handleDeleteBlock(selectedBlockId!)}
                 className="p-1.5 bg-red-500 text-white rounded hover:bg-red-600 ml-auto block mt-1 mb-1 mr-1"
                 title="Delete Block"
             >
@@ -739,7 +696,6 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
             </button>
           </div>
         )}
-
 
         {isOcrLoading && (
             <div className="absolute inset-0 bg-gray-800 bg-opacity-75 flex flex-col items-center justify-center z-20">
@@ -752,11 +708,9 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
                 <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-alert-circle text-red-400 mb-3"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
                 <p className="text-red-400 text-lg text-center mb-2">{t('ocrFailedError') || 'OCR Failed'}</p>
                 <p className="text-red-400 text-sm text-center">{ocrError}</p>
-                {/* TODO: Add a retry button? */}
             </div>
         )}
 
-        {/* Drawing selection box visual (tempBox for during drawing, selectionBox for final) */}
         {(tempBox || selectionBox) && (
           <div
             style={{
@@ -765,16 +719,13 @@ const AdvancedEditInterface: React.FC<AdvancedEditInterfaceProps> = ({ file, pag
               top: `${(tempBox || selectionBox)!.y}px`,
               width: `${(tempBox || selectionBox)!.width}px`,
               height: `${(tempBox || selectionBox)!.height}px`,
-              border: '2px solid #00ff00', // Green border for selection
-              backgroundColor: 'rgba(0, 255, 0, 0.1)', // Light green tint
-              pointerEvents: 'none', // So it doesn't interfere with mouse events on the image
+              border: '2px solid #00ff00',
+              backgroundColor: 'rgba(0, 255, 0, 0.1)',
+              pointerEvents: 'none',
             }}
           />
         )}
       </div>
-
-      {/* Editing Panel (placeholder, could be a sidebar or a modal) */}
-      {/* {selectedBlockId && ( ... editing controls for the selected block ... )} */}
 
        <button
         onClick={onExit}

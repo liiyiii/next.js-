@@ -1,29 +1,11 @@
 // src/services/apiService.js
+export const API_BASE_URL = 'http://localhost:5000'; // Ensure this is correct for local testing
 
-export const API_BASE_URL = ' https://607c-223-108-52-246.ngrok-free.app';
-
-/**
- * Helper function to handle XHR requests for file uploads.
- * @param {string} endpoint - The API endpoint to call.
- * @param {File} pdfFile - The PDF file to upload.
- * @param {(progress: number) => void} onUploadProgress - Callback for upload progress.
- * @returns {Promise<any>} - Promise resolving with JSON response or rejecting with an error object.
- */
-function performPdfConversionRequest(endpoint, pdfFile, onUploadProgress) {
+function createXhrPromise(endpoint, formData, onUploadProgress) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', endpoint, true);
 
-    // Set responseType to 'blob' for file download, but we'll parse JSON from text first if possible
-    // For file download, the backend should send Content-Disposition header.
-    // If the response is always JSON (even for errors), then 'json' might be okay,
-    // but 'text' is safer for manual parsing before deciding.
-    // Let's assume the success response for conversion is a file blob, and errors are JSON.
-    // However, the task asks to parse xhr.responseText as JSON and resolve.
-    // This implies the backend sends JSON for success too, which might contain a download URL or file info.
-    // If the backend sends the file directly, then responseType should be 'blob'.
-    // Given the example, it seems to expect JSON response text, so we'll stick to that for now.
-
     xhr.upload.onprogress = (event) => {
       if (event.lengthComputable) {
         const percentage = Math.round((event.loaded * 100) / event.total);
@@ -35,206 +17,80 @@ function performPdfConversionRequest(endpoint, pdfFile, onUploadProgress) {
 
     xhr.onload = () => {
       try {
-        // Attempt to parse as JSON first, as per instruction for success.
-        // If direct file download is the actual success case, this needs adjustment.
         const responseText = xhr.responseText;
+        console.log(`API Service Response for ${endpoint}: Status ${xhr.status}, ResponseText:`, responseText);
         if (xhr.status >= 200 && xhr.status < 300) {
-          // Assuming the success response is JSON as per "parse xhr.responseText as JSON and resolve"
-          // If the actual success response is a file blob, then `xhr.response` (with xhr.responseType = 'blob') should be used.
           try {
             const responseJson = JSON.parse(responseText);
             resolve(responseJson);
           } catch (e) {
-            // This case might happen if the server sends a file directly on 2xx status
-            // but instructions say "parse ... as JSON and resolve".
-            // For now, we'll consider this a parsing failure if not JSON.
-            console.warn('API Service: Response was 2xx but not valid JSON. ResponseText:', responseText);
-            reject({ 
-              status: xhr.status, 
-              message: 'Response was successful but not valid JSON: ' + responseText, 
-              errorObject: e 
+            console.error(`API Service Success (but not JSON) for ${endpoint}: Status`, xhr.status, 'ResponseText:', responseText, 'Error:', e);
+            reject({
+              status: xhr.status,
+              message: `Response was successful but not valid JSON: ${responseText}`,
+              errorObject: e,
+              responseText: responseText
             });
           }
         } else {
-          // Handle non-2xx status codes (errors)
-          let errorMessage = xhr.statusText || 'Unknown error';
-          try {
-            const errorJson = JSON.parse(responseText);
-            errorMessage = errorJson.error || errorJson.message || errorMessage;
-          } catch (e) {
-            // ResponseText was not JSON, use it as is or default.
-            if(responseText) errorMessage = responseText;
+          let errorMessage = xhr.statusText || `Unknown error during XHR load (status ${xhr.status})`;
+          if (responseText && responseText.trim() !== '') {
+            try {
+                const errorJson = JSON.parse(responseText);
+                errorMessage = errorJson.error || errorJson.message || errorMessage;
+            } catch (e) {
+                errorMessage = responseText; // Use responseText if not JSON
+            }
           }
+          console.error(`API Service Error (onload) for ${endpoint}: Status`, xhr.status, 'Message:', errorMessage, 'ResponseText:', responseText);
           reject({ status: xhr.status, message: errorMessage, response: responseText });
         }
       } catch (e) {
-        // This catch is for if JSON.parse itself throws an error on non-JSON responseText
-        // (though typically, the try-catch inside the 2xx block would handle JSON parsing for success).
-        // This primarily catches issues if `xhr.responseText` itself is problematic before parsing.
-        reject({ status: xhr.status, message: 'Failed to process response: ' + xhr.responseText, errorObject: e });
+        console.error(`API Service Error (onload exception) for ${endpoint}: Status`, xhr.status, 'Error:', e, 'ResponseText:', xhr.responseText);
+        reject({ status: xhr.status, message: `Failed to process response: ${xhr.responseText || e.message}`, errorObject: e, responseText: xhr.responseText });
       }
     };
 
-    xhr.onerror = () => {
-      // Network errors (e.g., CORS, server down)
-      reject({ status: xhr.status, message: '网络错误或跨域问题。' });
+    xhr.onerror = (err) => {
+      console.error('API Service Network Error: Endpoint', endpoint, 'Status', xhr.status, 'StatusText', xhr.statusText, 'ErrorObject:', err);
+      reject({ status: xhr.status || 0, message: `Network error or server not responding at ${endpoint}. Check backend console.`, endpoint: endpoint, errorEvent: err });
     };
 
     xhr.onabort = () => {
-      reject({ status: 0, message: 'Request aborted.' });
+      console.error('API Service Request Aborted: Endpoint', endpoint);
+      reject({ status: 0, message: 'Request aborted.', endpoint: endpoint });
     };
 
-    const formData = new FormData();
-    formData.append('pdf_file', pdfFile); 
+    console.log(`API Service: Sending request to ${endpoint} with FormData.`);
     xhr.send(formData);
   });
 }
 
-/**
- * Converts a digital PDF to an editable format.
- * @param {File} pdfFile - The PDF file to upload.
- * @param {(progress: number) => void} onUploadProgress - Callback for upload progress.
- * @returns {Promise<any>} - Promise resolving with the conversion result.
- */
 export async function convertDigitalPdf(pdfFile, onUploadProgress) {
   const endpointUrl = `${API_BASE_URL}/convert_digital`;
-  return performPdfConversionRequest(endpointUrl, pdfFile, onUploadProgress);
+  const formData = new FormData();
+  formData.append('pdf_file', pdfFile);
+  return createXhrPromise(endpointUrl, formData, onUploadProgress);
 }
 
-/**
- * Converts an image-based or scanned PDF to an editable format using OCR.
- * @param {File} pdfFile - The PDF file to upload.
- * @param {(progress: number) => void} onUploadProgress - Callback for upload progress.
- * @returns {Promise<any>} - Promise resolving with the conversion result.
- */
 export async function convertImageOcrPdf(pdfFile, onUploadProgress) {
   const endpointUrl = `${API_BASE_URL}/convert_image_ocr`;
-  return performPdfConversionRequest(endpointUrl, pdfFile, onUploadProgress);
+  const formData = new FormData();
+  formData.append('pdf_file', pdfFile);
+  return createXhrPromise(endpointUrl, formData, onUploadProgress);
 }
 
-/**
- * Performs OCR on an entire image (page).
- * @param {File} imageFile - The image file (e.g., from a PDF page canvas) to perform OCR on.
- * @param {(progress: number) => void} [onUploadProgress] - Optional callback for upload progress.
- * @returns {Promise<any>} - Promise resolving with OCR results (e.g., text blocks with coordinates).
- */
 export async function ocrFullPage(imageFile, onUploadProgress) {
-  const endpointUrl = `${API_BASE_URL}/api/ocr_full_page`; // Endpoint based on plan assumption
-  // We need a generic request function if the payload isn't always 'pdf_file'
-  // For now, let's adapt performPdfConversionRequest or create a new one.
-  // Assuming the backend expects 'image_file' for this endpoint.
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', endpointUrl, true);
-
-    xhr.upload.onprogress = (event) => {
-      if (event.lengthComputable) {
-        const percentage = Math.round((event.loaded * 100) / event.total);
-        if (onUploadProgress) {
-          onUploadProgress(percentage);
-        }
-      }
-    };
-
-    xhr.onload = () => {
-      try {
-        const responseText = xhr.responseText;
-        if (xhr.status >= 200 && xhr.status < 300) {
-          try {
-            const responseJson = JSON.parse(responseText);
-            resolve(responseJson);
-          } catch (e) {
-            console.warn('API Service (ocrFullPage): Response was 2xx but not valid JSON. ResponseText:', responseText);
-            reject({ status: xhr.status, message: 'Response was successful but not valid JSON: ' + responseText, errorObject: e });
-          }
-        } else {
-          let errorMessage = xhr.statusText || 'Unknown error';
-          try {
-            const errorJson = JSON.parse(responseText);
-            errorMessage = errorJson.error || errorJson.message || errorMessage;
-          } catch (e) {
-            if(responseText) errorMessage = responseText;
-          }
-          reject({ status: xhr.status, message: errorMessage, response: responseText });
-        }
-      } catch (e) {
-        reject({ status: xhr.status, message: 'Failed to process response: ' + xhr.responseText, errorObject: e });
-      }
-    };
-
-    xhr.onerror = () => {
-      reject({ status: xhr.status, message: 'Network error or CORS issue.' });
-    };
-    xhr.onabort = () => {
-      reject({ status: 0, message: 'Request aborted.' });
-    };
-
-    const formData = new FormData();
-    formData.append('image_file', imageFile, imageFile.name || 'page_image.png'); // Send the image file
-    xhr.send(formData);
-  });
+  const endpointUrl = `${API_BASE_URL}/api/ocr_full_page`;
+  const formData = new FormData();
+  formData.append('image_file', imageFile, imageFile.name || 'page_image.png');
+  return createXhrPromise(endpointUrl, formData, onUploadProgress);
 }
 
-
-/**
- * Performs OCR on a specific region of an image.
- * @param {File} imageFile - The image file.
- * @param {{x: number, y: number, width: number, height: number}} region - The coordinates of the region.
- * @param {(progress: number) => void} [onUploadProgress] - Optional callback for upload progress.
- * @returns {Promise<any>} - Promise resolving with OCR result for the region.
- */
 export async function ocrRegion(imageFile, region, onUploadProgress) {
-  const endpointUrl = `${API_BASE_URL}/api/ocr_region`; // Endpoint based on plan assumption
-
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', endpointUrl, true);
-
-    xhr.upload.onprogress = (event) => {
-      if (event.lengthComputable) {
-        const percentage = Math.round((event.loaded * 100) / event.total);
-        if (onUploadProgress) {
-          onUploadProgress(percentage);
-        }
-      }
-    };
-
-    xhr.onload = () => {
-      try {
-        const responseText = xhr.responseText;
-        if (xhr.status >= 200 && xhr.status < 300) {
-          try {
-            const responseJson = JSON.parse(responseText);
-            resolve(responseJson);
-          } catch (e) {
-            console.warn('API Service (ocrRegion): Response was 2xx but not valid JSON. ResponseText:', responseText);
-            reject({ status: xhr.status, message: 'Response was successful but not valid JSON: ' + responseText, errorObject: e });
-          }
-        } else {
-          let errorMessage = xhr.statusText || 'Unknown error';
-          try {
-            const errorJson = JSON.parse(responseText);
-            errorMessage = errorJson.error || errorJson.message || errorMessage;
-          } catch (e) {
-            if(responseText) errorMessage = responseText;
-          }
-          reject({ status: xhr.status, message: errorMessage, response: responseText });
-        }
-      } catch (e) {
-        reject({ status: xhr.status, message: 'Failed to process response: ' + xhr.responseText, errorObject: e });
-      }
-    };
-
-    xhr.onerror = () => {
-      reject({ status: xhr.status, message: 'Network error or CORS issue.' });
-    };
-    xhr.onabort = () => {
-      reject({ status: 0, message: 'Request aborted.' });
-    };
-
-    const formData = new FormData();
-    formData.append('image_file', imageFile, imageFile.name || 'page_image.png');
-    formData.append('region', JSON.stringify(region)); // Send region data as a JSON string
-    xhr.send(formData);
-  });
+  const endpointUrl = `${API_BASE_URL}/api/ocr_region`;
+  const formData = new FormData();
+  formData.append('image_file', imageFile, imageFile.name || 'page_image.png');
+  formData.append('region', JSON.stringify(region));
+  return createXhrPromise(endpointUrl, formData, onUploadProgress);
 }
