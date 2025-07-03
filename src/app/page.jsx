@@ -1,21 +1,21 @@
-// src/app/page.tsx
+// src/app/page.jsx
 'use client';
 
 import Head from 'next/head';
 import { useEffect, useState } from 'react';
-import dynamic from 'next/dynamic'; // Import dynamic
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import ConverterSection from '@/components/ConverterSection';
-import ShowcaseSection from '@/components/ShowcaseSection';
-import PreviewArea from '@/components/PreviewArea';
-import PricingCard from '@/components/PricingCard';
-import FaqItem from '@/components/FaqItem';
-import TestimonialCard from '@/components/TestimonialCard';
-import DynamicFullScreenModalLoader from '@/components/DynamicFullScreenModalLoader';
-import ImageTranslator from '@/components/ImageTranslator'; // Import the new component
+import dynamic from 'next/dynamic';
+import Header from '@/components/Header'; // Assuming Header is/will be .jsx or .js
+import Footer from '@/components/Footer'; // Assuming Footer is/will be .jsx or .js
+import ConverterSection from '@/components/ConverterSection'; // Assuming this is/will be .jsx or .js
+import ShowcaseSection from '@/components/ShowcaseSection';   // Assuming this is/will be .jsx or .js
+import PreviewArea from '@/components/PreviewArea';           // Assuming this is/will be .jsx or .js
+import PricingCard from '@/components/PricingCard';         // Assuming this is/will be .jsx or .js
+import FaqItem from '@/components/FaqItem';                 // Assuming this is/will be .jsx or .js
+import TestimonialCard from '@/components/TestimonialCard';   // Assuming this is/will be .jsx or .js
+import DynamicFullScreenModalLoader from '@/components/DynamicFullScreenModalLoader'; // Assuming this is/will be .jsx or .js
+import ImageTranslator from '@/components/ImageTranslator'; // Will point to ImageTranslator.jsx
 import { useLanguage } from '@/contexts/LanguageContext';
-import type { LanguageKey } from '@/translations'; // Import LanguageKey type
+// No LanguageKey type import needed for JS
 
 const digitalFeatures = [
   { iconSVG: '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text text-purple-400"><path d="M15 2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>', titleKey: "digitalFeature1Title", descriptionKey: "digitalFeature1Desc" },
@@ -56,30 +56,26 @@ const testimonialData = [
 const gradientTextClass = "bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500";
 
 export default function Home() {
-  const { t, currentLanguage, translationsObject } = useLanguage(); // Get translationsObject
+  const { t, currentLanguage, translationsObject } = useLanguage();
 
-  // States for PreviewArea
-  const [globalUploadedPdfFile, setGlobalUploadedPdfFile] = useState<File | null>(null);
-  const [globalDocxPreviewImageUrls, setGlobalDocxPreviewImageUrls] = useState<string[] | null>(null);
-  const [globalDocxDownloadUrl, setGlobalDocxDownloadUrl] = useState<string | null>(null);
-  const [globalIsLoading, setGlobalIsLoading] = useState<boolean>(false);
-  const [globalConversionHasOccurred, setGlobalConversionHasOccurred] = useState<boolean>(false);
-  const [activeConverter, setActiveConverter] = useState<'digital' | 'image' | null>(null);
+  const [globalUploadedPdfFile, setGlobalUploadedPdfFile] = useState(null);
+  const [globalDocxPreviewImageUrls, setGlobalDocxPreviewImageUrls] = useState(null);
+  const [globalDocxDownloadUrl, setGlobalDocxDownloadUrl] = useState(null);
+  const [globalIsLoading, setGlobalIsLoading] = useState(false);
+  const [globalConversionHasOccurred, setGlobalConversionHasOccurred] = useState(false);
+  const [activeConverter, setActiveConverter] = useState(null);
 
-  // States for FullScreenPreviewModal
   const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
-  const [fullScreenDocType, setFullScreenDocType] = useState<'pdf' | 'docx' | null>(null);
-  const [currentPdfFileForFullScreen, setCurrentPdfFileForFullScreen] = useState<File | null>(null);
-  const [currentDocxImagesForFullScreen, setCurrentDocxImagesForFullScreen] = useState<string[] | null>(null);
-  const [initialFullScreenPage, setInitialFullScreenPage] = useState<number>(1);
+  const [fullScreenDocType, setFullScreenDocType] = useState(null);
+  const [currentPdfFileForFullScreen, setCurrentPdfFileForFullScreen] = useState(null);
+  const [currentDocxImagesForFullScreen, setCurrentDocxImagesForFullScreen] = useState(null);
+  const [initialFullScreenPage, setInitialFullScreenPage] = useState(1);
 
-  // State for the new Advanced Edit Mode
-  const [isEditModeActive, setIsEditModeActive] = useState<boolean>(false);
-  const [fileForEditMode, setFileForEditMode] = useState<File | null>(null);
-  const [pageNumberForEditMode, setPageNumberForEditMode] = useState<number>(1);
+  const [isEditModeActive, setIsEditModeActive] = useState(false);
+  const [fileForEditMode, setFileForEditMode] = useState(null);
+  const [pageNumberForEditMode, setPageNumberForEditMode] = useState(1);
 
-  // Dynamically import AdvancedEditInterface
-  const AdvancedEditInterface = dynamic(() => import('@/components/AdvancedEditInterface'), {
+  const AdvancedEditInterface = dynamic(() => import('@/components/AdvancedEditInterface'), { // Assuming this is .jsx or .js
     ssr: false,
     loading: () => (
       <div className="min-h-screen bg-gray-950 text-gray-200 font-sans flex flex-col items-center justify-center">
@@ -94,16 +90,14 @@ export default function Home() {
   });
 
   useEffect(() => {
-    // @ts-ignore
     if (window.lucide) {
-      // @ts-ignore
       window.lucide.createIcons();
     }
     document.documentElement.lang = currentLanguage;
   }, [currentLanguage]);
   
   let pageTitle = "PDF Converter"; 
-  const langKey = currentLanguage as LanguageKey; 
+  const langKey = currentLanguage; // Removed 'as LanguageKey'
 
   if (translationsObject && translationsObject[langKey] && translationsObject[langKey].logo) {
     pageTitle = translationsObject[langKey].logo;
@@ -111,9 +105,7 @@ export default function Home() {
     pageTitle = translationsObject.en.logo;
   }
 
-
-  // Callbacks to update global state from ConverterSection
-  const handleConversionStart = (converterType: 'digital' | 'image') => {
+  const handleConversionStart = (converterType) => {
     setActiveConverter(converterType);
     setGlobalIsLoading(true);
     setGlobalConversionHasOccurred(true); 
@@ -121,7 +113,7 @@ export default function Home() {
     setGlobalDocxDownloadUrl(null);
   };
 
-  const handleConversionSuccess = (converterType: 'digital' | 'image', downloadUrl: string, previewImageUrls: string[] | null, originalPdfFile: File | null) => {
+  const handleConversionSuccess = (converterType, downloadUrl, previewImageUrls, originalPdfFile) => {
     if (activeConverter === converterType) {
       console.log('Page: handleConversionSuccess - Received downloadUrl:', downloadUrl, 'Preview URLs:', previewImageUrls);
       setGlobalDocxDownloadUrl(downloadUrl);
@@ -132,7 +124,7 @@ export default function Home() {
     }
   };
 
-  const handleConversionError = (converterType: 'digital' | 'image', errorMessage: string) => {
+  const handleConversionError = (converterType, errorMessage) => {
     if (activeConverter === converterType) {
       setGlobalIsLoading(false);
       setGlobalDocxPreviewImageUrls(null);
@@ -140,7 +132,7 @@ export default function Home() {
     }
   };
   
-  const handleFileSelectedInPage = (converterType: 'digital' | 'image', file: File | null) => {
+  const handleFileSelectedInPage = (converterType, file) => {
     setActiveConverter(converterType); 
     setGlobalUploadedPdfFile(file);
     setGlobalDocxPreviewImageUrls(null);
@@ -149,8 +141,7 @@ export default function Home() {
     setGlobalIsLoading(false);
   };
 
-  // Functions to open the full-screen modal
-  const openPdfInFullScreen = (file: File | null, page: number = 1) => {
+  const openPdfInFullScreen = (file, page = 1) => {
     if (!file) return;
     setCurrentPdfFileForFullScreen(file);
     setFullScreenDocType('pdf');
@@ -158,7 +149,7 @@ export default function Home() {
     setIsFullScreenOpen(true);
   };
 
-  const openDocxInFullScreen = (urls: string[] | null, page: number = 1) => {
+  const openDocxInFullScreen = (urls, page = 1) => {
     if (!urls || urls.length === 0) return;
     setCurrentDocxImagesForFullScreen(urls);
     setFullScreenDocType('docx');
@@ -175,25 +166,23 @@ export default function Home() {
     }, 300); 
   };
 
-  const handlePricingCardClick = (sectionId: string) => {
+  const handlePricingCardClick = (sectionId) => {
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
-  const handleEnterEditModeCallback = (file: File, pageNumber: number) => {
+  const handleEnterEditModeCallback = (file, pageNumber) => {
     console.log('Entering edit mode for file:', file.name, 'Page:', pageNumber);
     setFileForEditMode(file);
     setPageNumberForEditMode(pageNumber);
     setIsEditModeActive(true);
-    // Potentially hide other sections or show a dedicated editing UI
   };
 
   const handleExitEditMode = () => {
     setIsEditModeActive(false);
     setFileForEditMode(null);
-    // Reset any edit-specific states
   };
 
   console.log('Page: Rendering with globalDocxDownloadUrl:', globalDocxDownloadUrl);
@@ -203,7 +192,6 @@ export default function Home() {
       <div className="min-h-screen bg-gray-950 text-gray-200 font-sans flex flex-col">
         <Header />
         <main className="flex-grow container mx-auto px-4 py-8 flex flex-col items-center">
-          {/* <h1 className="text-3xl font-bold text-purple-400 mb-6">Advanced Editing Mode</h1> */}
           <AdvancedEditInterface
             file={fileForEditMode}
             pageNumber={pageNumberForEditMode}
@@ -332,14 +320,13 @@ export default function Home() {
             onEnterEditMode={handleEnterEditModeCallback}
           />
 
-          {/* New Image Translator Section */}
           <section id="image-translator-section" className="py-20 bg-gray-900">
             <div className="container mx-auto px-4">
               <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-100" id="image-translator-section-title">
-                {t('imageTranslatorSectionTitle')} {/* Needs new translation key */}
+                {t('imageTranslatorSectionTitle')}
               </h2>
               <p className="text-xl text-gray-300 text-center mb-16 max-w-3xl mx-auto" id="image-translator-section-subtitle">
-                {t('imageTranslatorSectionSubtitle')} {/* Needs new translation key */}
+                {t('imageTranslatorSectionSubtitle')}
               </p>
               <ImageTranslator />
             </div>

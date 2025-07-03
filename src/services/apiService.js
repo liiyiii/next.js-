@@ -1,4 +1,38 @@
 // src/services/apiService.js
+
+/**
+ * @typedef {object} FontInfo - Describes font properties.
+ * @property {string} [family] - e.g., "Arial", "宋体"
+ * @property {number} [size] - Font size in pixels.
+ * @property {string} [weight] - e.g., "bold", "normal".
+ * @property {string} [style] - e.g., "italic", "normal".
+ */
+
+/**
+ * @typedef {object} ColorInfo - Describes color properties.
+ * @property {string} [fgColor] - Foreground/text color as hex string, e.g., "#000000".
+ * @property {string} [bgColor] - Background color of the text block as hex string, e.g., "#FFFFFF".
+ */
+
+/**
+ * @typedef {object} OCRBlockData - Represents a block of recognized and translated text with styling.
+ * @property {string} id - Unique ID for each block.
+ * @property {string} text - Original recognized text.
+ * @property {string} translatedText - Translated text.
+ * @property {[number, number, number, number]} blockBox - Bounding box `[x, y, width, height]` relative to the original image.
+ * @property {FontInfo} [fontInfo] - Information about the font.
+ * @property {ColorInfo} [colorInfo] - Information about colors.
+ * @property {string} [type] - Type of content, if provided by OCR.
+ * @property {{ x: number; y: number }} position - Current top-left `[x, y]` coordinates on the canvas (at zoomLevel 1), can be dragged.
+ * @property {number} [fontSize] - User-overridden font size.
+ * @property {string} [fontColor] - User-overridden font color (hex string).
+ */
+
+/**
+ * @typedef {object} OCRResponse
+ * @property {OCRBlockData[]} blockList - A list of OCR blocks.
+ */
+
 export const API_BASE_URL = 'http://localhost:5000'; // Ensure this is correct for local testing
 
 // Helper to convert RGB tuple to hex string

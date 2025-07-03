@@ -1,27 +1,25 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "target": "esnext", // Keep target modern
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
+    "strict": false, // Relax strictness as it's mainly for JS now
+    "noEmit": true, // Crucial: no output from this tsconfig
     "esModuleInterop": true,
     "module": "esnext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "bundler", // or "node"
     "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
-    "paths": {
+    "isolatedModules": true, // Next.js often uses this
+    "jsx": "preserve", // Important for JSX
+    "checkJs": false, // Do not type-check JS files using this config
+    "paths": { // Keep paths for editor intellisense if it uses tsconfig
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  // Include only files that are part of the TypeScript setup for Next.js itself,
+  // not the application's source code if it's all JavaScript.
+  // Or make it an empty array if all app code is JS/JSX.
+  "include": ["next-env.d.ts", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]
 }

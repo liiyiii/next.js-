@@ -1,28 +1,59 @@
-// src/components/TextEditToolbar.tsx
+// src/components/TextEditToolbar.jsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { OCRBlock } from '@/types'; // Import from shared types
+// No OCRBlock import needed from types for JS; structure is implicit or via JSDoc.
 
-interface TextEditToolbarProps {
-  selectedBlockData: OCRBlock | null;
-  onUpdateBlock: (updatedBlock: OCRBlock) => void;
-  onDeleteBlock: (blockId: string) => void;
-  onClose: () => void; // Callback to close or hide the toolbar
-}
+/**
+ * JSDoc for OCRBlockData structure (as defined in ImageTranslator.jsx)
+ * This component expects selectedBlockData to conform to this structure.
+ * @typedef {object} FontInfo
+ * @property {string} [family]
+ * @property {number} [size]
+ * @property {string} [weight]
+ * @property {string} [style]
+ */
 
-const TextEditToolbar: React.FC<TextEditToolbarProps> = ({
+/**
+ * @typedef {object} ColorInfo
+ * @property {string} [fgColor]
+ * @property {string} [bgColor]
+ */
+
+/**
+ * @typedef {object} OCRBlockData
+ * @property {string} id
+ * @property {string} text
+ * @property {string} translatedText
+ * @property {[number, number, number, number]} blockBox
+ * @property {FontInfo} [fontInfo]
+ * @property {ColorInfo} [colorInfo]
+ * @property {string} [type]
+ * @property {number} [fontSize] - User-defined font size
+ * @property {string} [fontColor] - User-defined font color
+ * @property {{ x: number; y: number }} position
+ */
+
+/**
+ * @param {{
+ *   selectedBlockData: OCRBlockData | null;
+ *   onUpdateBlock: (updatedBlock: OCRBlockData) => void;
+ *   onDeleteBlock: (blockId: string) => void;
+ *   onClose: () => void;
+ * }} props
+ */
+const TextEditToolbar = ({
   selectedBlockData,
   onUpdateBlock,
   onDeleteBlock,
   onClose,
 }) => {
   const { t } = useLanguage();
-  const [editText, setEditText] = useState<string>('');
-  const [fontSize, setFontSize] = useState<number>(16);
-  const [fontColor, setFontColor] = useState<string>('#000000');
-  const [fontFamily, setFontFamily] = useState<string>('Arial');
+  const [editText, setEditText] = useState('');
+  const [fontSize, setFontSize] = useState(16);
+  const [fontColor, setFontColor] = useState('#000000');
+  const [fontFamily, setFontFamily] = useState('Arial');
 
   const availableFontFamilies = [
     { name: 'Arial', value: 'Arial, sans-serif' },
@@ -35,16 +66,14 @@ const TextEditToolbar: React.FC<TextEditToolbarProps> = ({
     { name: 'Comic Sans MS', value: "'Comic Sans MS', cursive, sans-serif" },
     { name: 'Impact', value: 'Impact, Charcoal, sans-serif' },
     { name: 'Tahoma', value: 'Tahoma, Geneva, sans-serif' },
-    // Common CJK fonts (ensure users have them or use web fonts)
-    { name: 'SimSun (宋体)', value: 'SimSun, NSimSun, STSong, MS Song, serif' }, //宋体
-    { name: 'SimHei (黑体)', value: 'SimHei, STHeiti, MS Hei, sans-serif' }, //黑体
-    { name: 'Microsoft YaHei (微软雅黑)', value: "'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', sans-serif" },//雅黑
+    { name: 'SimSun (宋体)', value: 'SimSun, NSimSun, STSong, MS Song, serif' },
+    { name: 'SimHei (黑体)', value: 'SimHei, STHeiti, MS Hei, sans-serif' },
+    { name: 'Microsoft YaHei (微软雅黑)', value: "'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', sans-serif" },
   ];
 
   useEffect(() => {
     if (selectedBlockData) {
       setEditText(selectedBlockData.translatedText || selectedBlockData.text || '');
-      // Use user-override first, then fontInfo, then default
       setFontSize(selectedBlockData.fontSize || selectedBlockData.fontInfo?.size || 16);
       setFontColor(selectedBlockData.fontColor || selectedBlockData.colorInfo?.fgColor || '#000000');
       setFontFamily(selectedBlockData.fontInfo?.family || 'Arial');
@@ -52,7 +81,7 @@ const TextEditToolbar: React.FC<TextEditToolbarProps> = ({
   }, [selectedBlockData]);
 
   if (!selectedBlockData) {
-    return null; // Don't render if no block is selected
+    return null;
   }
 
   const handleApplyChanges = () => {
@@ -60,15 +89,13 @@ const TextEditToolbar: React.FC<TextEditToolbarProps> = ({
       onUpdateBlock({
         ...selectedBlockData,
         translatedText: editText,
-        fontSize: fontSize, // This will be the user-override
-        fontColor: fontColor, // This will be the user-override
-        fontInfo: { // Update fontInfo with the new family
+        fontSize: fontSize,
+        fontColor: fontColor,
+        fontInfo: {
           ...selectedBlockData.fontInfo,
           family: fontFamily,
-          size: fontSize, // Also update size in fontInfo for consistency if needed by draw func
+          size: fontSize,
         },
-        // colorInfo might also need updating if fontColor is considered part of it
-        // For now, let's assume draw function checks block.fontColor first, then block.colorInfo.fgColor
       });
     }
   };
@@ -102,7 +129,7 @@ const TextEditToolbar: React.FC<TextEditToolbarProps> = ({
 
         <div className="form-control">
           <label htmlFor="fontFamily" className="label pb-1">
-            <span className="label-text text-gray-300">{t('fontFamilyLabel')}</span> {/* Needs new translation key */}
+            <span className="label-text text-gray-300">{t('fontFamilyLabel')}</span>
           </label>
           <select
             id="fontFamily"
@@ -127,7 +154,20 @@ const TextEditToolbar: React.FC<TextEditToolbarProps> = ({
               type="number"
               id="fontSize"
               value={fontSize}
-              onChange={(e) => setFontSize(parseInt(e.target.value, 10))}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === "") {
+                  setFontSize(16); // Revert to a default if input is cleared
+                } else {
+                  const newSize = parseInt(val, 10);
+                  if (!isNaN(newSize) && newSize > 0) { // Ensure positive font size
+                    setFontSize(newSize);
+                  } else if (isNaN(newSize)) {
+                    setFontSize(16); // Revert to default if parsing fails
+                  }
+                  // If newSize is 0 or negative, it doesn't update, effectively keeping previous valid state or becoming 16 on error
+                }
+              }}
               className="input input-bordered input-primary w-full bg-gray-800 text-white"
             />
           </div>
@@ -140,7 +180,7 @@ const TextEditToolbar: React.FC<TextEditToolbarProps> = ({
               id="fontColor"
               value={fontColor}
               onChange={(e) => setFontColor(e.target.value)}
-              className="input input-bordered input-primary w-full h-12 bg-gray-800 p-1" // p-1 for color input to show swatch better
+              className="input input-bordered input-primary w-full h-12 bg-gray-800 p-1"
             />
           </div>
         </div>
@@ -159,30 +199,3 @@ const TextEditToolbar: React.FC<TextEditToolbarProps> = ({
 };
 
 export default TextEditToolbar;
-
-// Make sure to define these translation keys in your language files:
-// "editToolbarTitle": "Edit Text Block",
-// "editTextLabel": "Text Content:",
-// "fontSizeLabel": "Font Size:",
-// "fontColorLabel": "Font Color:",
-// "deleteBtn": "Delete",
-// "applyChangesBtn": "Apply Changes"
-
-// Also, ensure OCRBlock type is accessible here.
-// If it's defined in ImageTranslator.tsx, you might need to move it to a shared types file,
-// e.g., src/types/index.ts and import it in both components.
-// For now, I'm assuming it can be imported or a similar structure is defined.
-// export interface OCRBlock {
-//   id: string;
-//   text: string;
-//   translatedText: string;
-//   blockBox: [number, number, number, number];
-//   fontInfo?: any;
-//   colorInfo?: any;
-//   type?: string;
-//   isEditing?: boolean;
-//   currentEditText?: string;
-//   fontSize?: number;
-//   fontColor?: string;
-//   position?: { x: number; y: number };
-// }

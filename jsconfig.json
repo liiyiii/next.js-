@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "jsx": "preserve",
+    "allowJs": true, // Usually default in jsconfig but good to be explicit
+    "esModuleInterop": true, // For consistency with typical Next.js setups
+    "module": "esnext", // Or "commonjs" depending on project type, esnext is fine for Next.js
+    "moduleResolution": "node", // Or "bundler"
+    "resolveJsonModule": true,
+    "isolatedModules": true // Next.js often uses this with Babel
+  },
+  "include": [
+    "next-env.d.js", // if you create a JS version for env vars
+    "src/**/*.js",
+    "src/**/*.jsx",
+    ".next/types/**/*.js" // if Next.js generates JS types
+  ],
+  "exclude": ["node_modules"]
+}
