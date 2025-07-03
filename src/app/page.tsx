@@ -12,7 +12,8 @@ import PreviewArea from '@/components/PreviewArea';
 import PricingCard from '@/components/PricingCard';
 import FaqItem from '@/components/FaqItem';
 import TestimonialCard from '@/components/TestimonialCard';
-import DynamicFullScreenModalLoader from '@/components/DynamicFullScreenModalLoader'; 
+import DynamicFullScreenModalLoader from '@/components/DynamicFullScreenModalLoader';
+import ImageTranslator from '@/components/ImageTranslator'; // Import the new component
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { LanguageKey } from '@/translations'; // Import LanguageKey type
 
@@ -330,6 +331,19 @@ export default function Home() {
             onDocxPaneClick={() => openDocxInFullScreen(globalDocxPreviewImageUrls)}
             onEnterEditMode={handleEnterEditModeCallback}
           />
+
+          {/* New Image Translator Section */}
+          <section id="image-translator-section" className="py-20 bg-gray-900">
+            <div className="container mx-auto px-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-100" id="image-translator-section-title">
+                {t('imageTranslatorSectionTitle')} {/* Needs new translation key */}
+              </h2>
+              <p className="text-xl text-gray-300 text-center mb-16 max-w-3xl mx-auto" id="image-translator-section-subtitle">
+                {t('imageTranslatorSectionSubtitle')} {/* Needs new translation key */}
+              </p>
+              <ImageTranslator />
+            </div>
+          </section>
 
           <section id="pricing" className="py-20 bg-gray-800">
             <div className="container mx-auto px-4">

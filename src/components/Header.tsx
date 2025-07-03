@@ -50,7 +50,8 @@ const Header = () => {
 
   const navLinks = [
     { id: 'digital-converter', key: 'digitalPdfNav' },
-    { id: 'image-converter', key: 'imagePdfNav' },
+    { id: 'image-converter', key: 'imagePdfNav' }, // This seems to be for the old image PDF converter
+    { id: 'image-translator-section', key: 'imageTranslatorNav' }, // New link for our image translator
     { id: 'showcase', key: 'showcaseNav' },
     { id: 'pricing', key: 'pricingNav' },
     { id: 'about', key: 'aboutNav' },

@@ -139,6 +139,39 @@ export const translations = {
         cannotCreateCanvasError: "Cannot download: Failed to create canvas context.", // New Key
         imageDownloadSuccess: "Image download started!", // New Key
         imageLoadFailedForDownload: "Failed to load image for download.", // New Key
+        // Image Translator Feature Keys
+        imageTranslatorSectionTitle: "Online Image Translator",
+        imageTranslatorSectionSubtitle: "Translate text directly on your images in real-time. Upload, translate, and edit with ease.",
+        imageTranslatorNav: "Image Translator",
+        imageTranslatorTitle: "Image Translator & Editor",
+        translateFullImageBtn: "Translate Full Image",
+        translateRegionBtn: "Translate Selected Region",
+        processingImage: "Processing Image...",
+        imageLoadError: "Error loading image. Please try a different file or check the file integrity.",
+        invalidImageFile: "Invalid file type. Please select an image file (e.g., PNG, JPG).",
+        noImageSelected: "No image selected. Please upload an image first.",
+        ocrGenericError: "An error occurred during OCR/translation. Please try again.",
+        doneEditingBtn: "Done", // General "Done" for simple edits
+        deleteBlockBtn: "Delete Text Block",
+        editToolbarTitle: "Edit Text Block",
+        editTextLabel: "Text Content:",
+        fontSizeLabel: "Font Size:",
+        fontColorLabel: "Font Color:",
+        deleteBtn: "Delete", // Generic delete, also used by toolbar
+        applyChangesBtn: "Apply Changes",
+        loading: "Loading...",
+        selectImagePrompt: "Select or Drop Image",
+        fontFamilyLabel: "Font Family:",
+        // Export Keys
+        exportOptionsLabel: "Export Options:",
+        exportBtnLabel: "Export As",
+        exportJsonBtn: "JSON (.json)",
+        exportJpgBtn: "Image (.jpg)",
+        exportPdfBtn: "Document (.pdf)",
+        noDataToExport: "No data available to export.",
+        exportJsonSuccess: "JSON file exported successfully.",
+        exportJpgSuccess: "JPG image exported successfully.",
+        exportPdfSuccess: "PDF document exported successfully.",
     },
     zh: {
         logo: "PDF转换工具",
@@ -279,6 +312,39 @@ export const translations = {
         cannotCreateCanvasError: "无法下载：创建画布失败。", // New Key - Chinese
         imageDownloadSuccess: "图片下载已开始！", // New Key - Chinese
         imageLoadFailedForDownload: "加载图片以下载失败。", // New Key - Chinese
+        // Image Translator Feature Keys - Chinese
+        imageTranslatorSectionTitle: "在线图片翻译工具",
+        imageTranslatorSectionSubtitle: "实时翻译图片中的文字。轻松上传、翻译并编辑您的图片内容。",
+        imageTranslatorNav: "图片翻译",
+        imageTranslatorTitle: "图片翻译与编辑器",
+        translateFullImageBtn: "翻译整张图片",
+        translateRegionBtn: "翻译选中区域",
+        processingImage: "正在处理图片...",
+        imageLoadError: "图片加载失败。请尝试其他文件或检查文件完整性。",
+        invalidImageFile: "文件类型无效。请选择图片文件（例如 PNG, JPG）。",
+        noImageSelected: "未选择图片。请先上传一张图片。",
+        ocrGenericError: "OCR/翻译过程中发生错误。请重试。",
+        doneEditingBtn: "完成", // 通用“完成”
+        deleteBlockBtn: "删除文本块",
+        editToolbarTitle: "编辑文本块",
+        editTextLabel: "文本内容：",
+        fontSizeLabel: "字体大小：",
+        fontColorLabel: "字体颜色：",
+        deleteBtn: "删除", // 通用删除，工具栏也使用
+        applyChangesBtn: "应用更改",
+        loading: "加载中...",
+        selectImagePrompt: "选择或拖放图片",
+        fontFamilyLabel: "字体：",
+        // Export Keys - Chinese
+        exportOptionsLabel: "导出选项：",
+        exportBtnLabel: "导出为",
+        exportJsonBtn: "JSON 文件 (.json)",
+        exportJpgBtn: "图片文件 (.jpg)",
+        exportPdfBtn: "文档文件 (.pdf)",
+        noDataToExport: "没有可导出的数据。",
+        exportJsonSuccess: "JSON 文件导出成功。",
+        exportJpgSuccess: "JPG 图片导出成功。",
+        exportPdfSuccess: "PDF 文档导出成功。",
     },
 };
 
