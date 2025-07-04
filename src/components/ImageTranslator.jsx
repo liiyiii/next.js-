@@ -526,36 +526,70 @@ const ImageTranslator = () => { // Removed React.FC<ImageTranslatorProps>
 
   return (
     <div className="p-4 md:p-6 bg-gray-800 text-white rounded-lg shadow-2xl">
-      {/* <h2 className="text-2xl font-semibold mb-6 text-purple-400 text-center">{t('imageTranslatorTitle')}</h2> */}
+      {/* Title removed, assuming it's handled by the main page section title */}
 
-      <div className="mb-6 flex flex-col sm:flex-row flex-wrap gap-4 items-center justify-center">
-        <label className="form-control w-full sm:w-auto max-w-xs">
-          <div className="label">
-            <span className="label-text text-gray-300">{originalImage ? originalImage.name : t('selectImagePrompt')}</span>
+      {/* Controls Area: Image Upload and Translate Button */}
+      <div className="mb-6 flex flex-col items-center gap-6">
+        {!displayedImageUrl ? (
+          // Prominent Dropzone-like area when no image is loaded
+          <label htmlFor="imageUploadInputInitial" className="w-full max-w-xl p-8 py-12 border-2 border-dashed border-gray-600 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-purple-500 hover:bg-gray-750 transition-colors duration-300 ease-in-out">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-upload-cloud text-gray-400 mb-4 group-hover:text-purple-400 transition-colors">
+              <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/>
+            </svg>
+            <p className="text-xl font-semibold text-gray-200 mb-2 group-hover:text-white transition-colors">{t('uploadImagePromptTitle')}</p>
+            <p className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors">{t('uploadImagePromptSubtitle')}</p>
+            <input
+              id="imageUploadInputInitial"
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+          </label>
+        ) : (
+          // Compact display when an image is loaded
+          <div className="w-full max-w-xl flex flex-col sm:flex-row items-center justify-between gap-3 p-4 bg-gray-750 rounded-md shadow">
+            <div className='flex-grow min-w-0'> {/* Added for truncation */}
+              <span className="text-gray-300 text-sm">{t('currentImageLabel')}: </span>
+              <span className="text-gray-100 truncate" title={originalImage ? originalImage.name : t('imageLoaded')}>
+                {originalImage ? originalImage.name : t('imageLoaded')}
+              </span>
+            </div>
+            <label htmlFor="imageReselectInput" className="btn btn-sm btn-outline btn-accent shrink-0">
+              {t('reselectImageBtn')}
+              <input
+                id="imageReselectInput"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </label>
           </div>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            className="file-input file-input-bordered file-input-primary w-full"
-          />
-        </label>
+        )}
 
         <button
           onClick={handleFullTranslate}
           disabled={!originalImage || isLoading || isDrawing}
-          className="btn btn-primary btn-wide sm:btn-md"
+          className="btn btn-primary btn-lg mt-2 w-full max-w-md sm:w-auto disabled:bg-opacity-50" // Larger button if image loaded
         >
           {isLoading && !isDrawing ? (
             <>
               <span className="loading loading-spinner"></span>
               {t('processingImage')}
             </>
-          ) : t('translateFullImageBtn')}
+          ) : (
+            <>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-wand-2 mr-2"><path d="m3 21 3.05-9.16a.8.8 0 0 0-.42-1L1 10l7-7 3 3L8.29 9.29a.8.8 0 0 0 1 1.08L19 14l-3 3-9.16-3.05a.8.8 0 0 0-1 .42L3 21Z"/><path d="M21 3l-9.16 3.05a.8.8 0 0 1-1-.42L8 3l3-3 3.05 9.16a.8.8 0 0 1-.42 1L11 14l7 7-3-3-2.71-2.71a.8.8 0 0 1-.1-1.18Z"/></svg>
+              {t('translateFullImageBtn')}
+            </>
+          )}
         </button>
       </div>
 
-      <div
+      {/* Canvas Area - Conditionally render only if an image is displayed */}
+      {displayedImageUrl && (
+        <div
         className="w-full aspect-[4/3] max-h-[70vh] overflow-hidden border-2 border-gray-600 rounded-md relative bg-gray-700 shadow-inner"
         onWheel={handleZoom}
       >

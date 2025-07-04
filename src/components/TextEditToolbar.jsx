@@ -107,10 +107,17 @@ const TextEditToolbar = ({
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 sm:bottom-4 sm:left-1/2 sm:transform sm:-translate-x-1/2 w-full max-w-lg p-4 bg-gray-700 shadow-2xl rounded-t-lg sm:rounded-lg z-50 text-white">
+    <div
+      className={`fixed bottom-0 left-0 right-0 sm:left-1/2 sm:transform sm:-translate-x-1/2 w-full max-w-lg p-4 bg-gray-700 shadow-2xl rounded-t-lg sm:rounded-lg z-50 text-white transition-all duration-300 ease-in-out ${selectedBlockData ? 'translate-y-0 opacity-100' : 'translate-y-full sm:translate-y-16 opacity-0 pointer-events-none'}`}
+    >
+      {/* The `pointer-events-none` when hidden is important so it doesn't intercept clicks */}
       <div className="flex justify-between items-center mb-4">
         <h4 className="text-xl font-semibold text-purple-300">{t('editToolbarTitle')}</h4>
-        <button onClick={onClose} className="btn btn-sm btn-circle btn-ghost absolute top-2 right-2 sm:relative sm:top-auto sm:right-auto">✕</button>
+        <button
+          onClick={onClose}
+          className="btn btn-sm btn-circle btn-ghost absolute top-2 right-2 sm:relative sm:top-auto sm:right-auto"
+          aria-label={t('closeBtn')} // Add aria-label for accessibility
+        >✕</button>
       </div>
 
       <div className="space-y-4">

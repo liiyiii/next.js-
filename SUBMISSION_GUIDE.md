@@ -57,6 +57,7 @@ The core new feature is the `ImageTranslator` component and its associated servi
 *   `jsconfig.json`: Added to configure paths (e.g., `@/*`) and JSX for the JavaScript project.
 *   `tsconfig.json`: Modified to be passive and not interfere with JavaScript development (e.g., `checkJs: false`).
 *   `next.config.js`: Converted from `next.config.ts`.
+*   `src/translations/index.ts`: Modified to include new internationalization keys for the image translator feature. (This file remains `.ts` as part of the existing i18n setup).
 *   `api_simulator.py`: The Python Flask API simulator (see section 3).
 *   `src/types/index.ts`: **Deleted**. Data structures are now documented via JSDoc in relevant `.js`/`.jsx` files.
 

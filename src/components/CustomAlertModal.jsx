@@ -1,18 +1,15 @@
-// src/components/CustomAlertModal.tsx
+// src/components/CustomAlertModal.jsx
 'use client';
 import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAlert } from '@/contexts/AlertContext'; // Import useAlert
+import { useAlert } from '@/contexts/AlertContext';
 
-interface CustomAlertModalProps {
-  // message prop is no longer needed as it comes from context
-  // onClose prop is no longer needed as hideAlert from context is used
-  // isVisible prop is no longer needed as isAlertOpen from context is used
-}
+// No props interface needed for JS version as it takes no props.
+// JSDoc could be added for clarity if desired but is minimal for this component.
 
-const CustomAlertModal: React.FC<CustomAlertModalProps> = () => {
+const CustomAlertModal = () => {
   const { t } = useLanguage();
-  const { isAlertOpen, alertMessage, hideAlert } = useAlert(); // Use context
+  const { isAlertOpen, alertMessage, hideAlert } = useAlert();
 
   if (!isAlertOpen) {
     return null;
@@ -30,7 +27,7 @@ const CustomAlertModal: React.FC<CustomAlertModalProps> = () => {
         <button 
           id="custom-alert-close-btn" 
           className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-300"
-          onClick={hideAlert} // Use hideAlert from context
+          onClick={hideAlert}
         >
           {t('OK')} 
         </button>

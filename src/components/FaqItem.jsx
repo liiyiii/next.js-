@@ -1,17 +1,18 @@
-// src/components/FaqItem.tsx
+// src/components/FaqItem.jsx
 'use client';
-import React, { useState } from 'react'; // Import useState
+import React, { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { ChevronRight } from 'lucide-react'; // Import ChevronRight icon
+import { ChevronRight } from 'lucide-react';
 
-interface FaqItemProps {
-  questionId: string;
-  questionTextKey: string;
-  answerId: string;
-  answerTextKey: string;
-}
-
-const FaqItem: React.FC<FaqItemProps> = ({ questionId, questionTextKey, answerId, answerTextKey }) => {
+/**
+ * @param {{
+ *   questionId: string;
+ *   questionTextKey: string;
+ *   answerId: string;
+ *   answerTextKey: string;
+ * }} props
+ */
+const FaqItem = ({ questionId, questionTextKey, answerId, answerTextKey }) => {
   const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -24,7 +25,10 @@ const FaqItem: React.FC<FaqItemProps> = ({ questionId, questionTextKey, answerId
       <h3 
         className="text-lg md:text-xl font-semibold mb-3 text-gray-100 flex justify-between items-center" 
         id={questionId}
-        onClick={toggleOpen} // Make the h3 clickable
+        onClick={toggleOpen}
+        role="button" // Added for accessibility
+        aria-expanded={isOpen}
+        aria-controls={answerId}
       >
         {t(questionTextKey)}
         <ChevronRight 
@@ -32,7 +36,12 @@ const FaqItem: React.FC<FaqItemProps> = ({ questionId, questionTextKey, answerId
         />
       </h3>
       {isOpen && (
-        <p className="text-gray-300 text-sm md:text-base" id={answerId}>
+        <p
+          className="text-gray-300 text-sm md:text-base"
+          id={answerId}
+          role="region" // Added for accessibility
+          aria-labelledby={questionId}
+        >
           {t(answerTextKey)}
         </p>
       )}
