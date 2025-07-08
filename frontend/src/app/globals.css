@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Define CSS variables for colors to be used in tailwind.config.ts and here */
+:root {
+  /* Base dark theme colors from original project (approximated) */
+  --color-background-primary-rgb: 10 10 10; /* gray-950 (#0A0A0A) */
+  --color-background-secondary-rgb: 23 23 23; /* gray-900 (#171717) */
+  --color-content-primary-rgb: 229 229 229; /* gray-100 (#E5E5E5) */
+  --color-content-secondary-rgb: 212 212 212; /* gray-300 (#D4D4D4) */
+  --color-border-primary-rgb: 55 65 81; /* gray-700 (#374151) */
+
+  /* Brand colors from prompt's legacyStyle */
+  --color-brand-blue-rgb: 59 130 246; /* #3b82f6 */
+  --color-brand-green-rgb: 16 185 129; /* #10b981 */
+  --color-brand-purple-rgb: 139 92 246; /* #8b5cf6 */
+
+  /* Default accent colors */
+  --color-primary-accent-rgb: var(--color-brand-purple-rgb);
+  --color-secondary-accent-rgb: var(--color-brand-blue-rgb);
+
+ /* Raw values for tailwind config compatibility if not using rgb() syntax there */
+  --color-background-primary: #0A0A0A;
+  --color-background-secondary: #171717;
+  --color-content-primary: #E5E5E5;
+  --color-content-secondary: #D4D4D4;
+  --color-border-primary: #374151;
+  --color-brand-blue: #3b82f6;
+  --color-brand-green: #10b981;
+  --color-brand-purple: #8b5cf6;
+
+}
+
+@layer base {
+  body {
+    /* Updated to use Tailwind color utilities which will pull from tailwind.config.ts */
+    @apply bg-background-primary text-content-primary;
+    font-family: var(--font-inter), system-ui, sans-serif; /* From layout.tsx & tailwind.config.ts */
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  pre, code, kbd, samp {
+    font-family: var(--font-fira-code), monospace; /* From layout.tsx & tailwind.config.ts */
+  }
+
+  /* Custom scrollbar to match dark theme */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-800; /* Updated to use Tailwind utility */
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-600; /* Updated to use Tailwind utility */
+    border-radius: 10px;
+    border: 2px solid theme('colors.gray.800');
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-brand-purple); /* Direct CSS var use */
+  }
+  /* For Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-primary) var(--color-background-secondary); /* Direct CSS var use */
+  }
+}
+
+/* Custom utility classes if needed, leveraging Tailwind's @apply */
+.text-gradient-brand {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-purple via-brand-blue to-brand-green;
+}
+
+.text-shimmer-effect {
+  background: linear-gradient(90deg, theme('colors.cyan.400'), theme('colors.blue.500'), theme('colors.orange.500'), theme('colors.yellow.400'));
+  background-size: 200% 100%;
+  animation: shimmer 4s infinite linear; /* Ensure 'shimmer' animation is defined in tailwind.config.ts */
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.text-glow-effect {
+   text-shadow: 0 0 10px theme('colors.purple.500 / 0.7'), 0 0 20px theme('colors.blue.500 / 0.5');
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-gray-700; /* Updated to use Tailwind utility */
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--color-brand-purple); /* Direct CSS var use */
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-brand-blue); /* Direct CSS var use */
+}
