@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react'; // Added useRef
 import Head from 'next/head';
+import { fabric } from 'fabric'; // Ensure fabric is imported
 import ImageCanvas from '@/components/ImageCanvas';
 import TextEditor from '@/components/TextEditor';
 import OCRScannerFX from '@/components/OCRScannerFX';
@@ -28,7 +29,7 @@ const adaptContextBlockToApi = (contextBlock: OcrTextBlock): OcrBlockData => ({
 export default function Home() {
   const {
     uploadedImageUrl,
-    originalImageFile,
+    originalImageName, // Corrected: Use originalImageName from context
     ocrBlocks,
     selectedBlockId,
     isScanning,
@@ -145,25 +146,26 @@ export default function Home() {
     deleteOcrBlock(blockId); // This will also deselect if it was selected
      // Remove from Fabric canvas
     if (fabricCanvasRef.current) {
-        const objectsToRemove = fabricCanvasRef.current.getObjects().filter(obj => obj.data?.id === blockId);
-        objectsToRemove.forEach(obj => fabricCanvasRef.current?.remove(obj));
-        fabricCanvasRef.current.discardActiveObject();
-        fabricCanvasRef.current.renderAll();
+        const canvas = fabricCanvasRef.current; // Use a const for clarity
+        const objectsToRemove = canvas.getObjects().filter((obj: fabric.Object) => obj.data?.id === blockId); // Added type for obj
+        objectsToRemove.forEach((obj: fabric.Object) => canvas.remove(obj)); // Added type for obj and use canvas const
+        canvas.discardActiveObject();
+        canvas.renderAll();
     }
     setShowEditor(false); // Close editor
   };
 
 
   const handleAreaSelect = async (bbox: [number, number, number, number]) => {
-    if (!originalImageFile) {
-      setError("Original image not found for partial OCR.");
+    if (!localOriginalImageFile) { // Check local state for the file
+      setError("Original image not found for partial OCR. Please re-upload if needed.");
       return;
     }
     // This is the "框选补漏" (Box selection for missed areas) feature.
     // For MVP, we'll create a new empty block for the user to fill manually.
-    // Future: Send `bbox` and `originalImageFile` to a partial OCR endpoint.
+    // Future: Send `bbox` and `localOriginalImageFile` to a partial OCR endpoint.
 
-    console.log("Area selected (original image coordinates):", bbox);
+    console.log("Area selected (original image coordinates for file", (localOriginalImageFile as File).name, "):", bbox);
     setIsLoading(true);
     try {
       // Simulate backend call for partial scan or allow direct text input
@@ -177,12 +179,6 @@ export default function Home() {
       };
       addOcrBlock(newBlock);
       setSelectedBlockId(newBlockId); // Auto-select the new block for editing
-
-      // Find the newly added (or to be added) fabric object to pass to editor
-      // This is tricky as the object isn't on canvas yet from this flow directly.
-      // For now, editor won't have a fabric object for newly created area selects.
-      // This can be improved by having ImageCanvas expose a method to add a block
-      // and return its fabric object, or by selecting it after it's rendered.
       setCurrentFabricObject(null);
       setShowEditor(true);
 
