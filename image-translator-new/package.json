@@ -1,0 +1,36 @@
+{
+  "name": "image-translator-new",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "react": "^18",
+    "react-dom": "^18",
+    "next": "14.2.3",
+    "fabric": "^5.3.0",
+    "i18next": "^23.11.5",
+    "lucide-react": "^0.395.0",
+    "react-i18next": "^14.1.2"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/fabric": "^5.3.7",
+    "postcss": "^8.4.38", # Kept for compatibility, @tailwindcss/postcss might bring its own
+    "@tailwindcss/postcss": "^4.0.0-alpha.10", # Example alpha, or use @latest
+    "tailwindcss": "^4.0.0-alpha.10", # Example alpha, or use @latest
+    "eslint": "^8",
+    "eslint-config-next": "14.2.3"
+  }
+}
+# Note: Using specific alpha versions as placeholders for Tailwind v4.
+# User should adjust to the exact v4.x versions they are using (e.g., by running npm install tailwindcss@latest @tailwindcss/postcss@latest postcss@latest)
+# Autoprefixer is usually also a good idea with Tailwind, but create-next-app might handle it or it's part of postcss.
+# If create-next-app installed an older tailwind, it should be removed or this will override.

@@ -1,0 +1,51 @@
+@import "tailwindcss"; /* Tailwind v4 import */
+
+/*
+  In Tailwind v4, @apply might be less common or work differently.
+  Base styles are often handled by Tailwind's preflight included via the import.
+  Custom base styles can still be added if needed.
+  For now, I'll keep the body styles here using standard CSS,
+  assuming Tailwind's preflight will set a good foundation.
+  The custom font and color variables from tailwind.config.ts should still be usable.
+*/
+
+body {
+  background-color: theme('colors.background'); /* Using theme() for Tailwind v3/v4 compatibility */
+  color: theme('colors.foreground');
+  font-family: theme('fontFamily.sans'); /* This will pick up var(--font-inter) */
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom CSS for animations (inspired by PDF converter and design prompt) */
+@keyframes fade-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-down {
+  animation: fade-in-down 0.5s ease-out forwards;
+}
+
+.animate-slide-in-up {
+  animation: slide-in-up 0.5s ease-out forwards;
+}
