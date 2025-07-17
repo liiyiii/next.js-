@@ -26,10 +26,13 @@ export default function LangLayout({
   params: { lang },
 }: Readonly<{
   children: React.ReactNode;
-  params: { lang: string };
+  params: { lang: string }; // lang is already typed here as string due to params typing
 }>) {
+  // No change needed here for lang, it's correctly typed by `params: { lang: string }`
+  // The error report might be slightly off if this was already fixed or if TypeScript server was lagging.
+  // However, to be absolutely explicit if it was for the `locale` prop of TranslationsProvider:
   return (
-    <TranslationsProvider locale={lang}>
+    <TranslationsProvider locale={lang as string}> {/* Explicitly cast if there was any doubt */}
       <div className="flex flex-col min-h-screen bg-background text-foreground">
         <Header /> {/* Header will use useTranslation hook */}
         <main className="flex-grow container mx-auto px-4 py-8">

@@ -155,7 +155,7 @@ function ToolPageContent() {
             textAlign: 'left',
           }
         };
-        setAreas(prevAreas => [...prevAreas, newArea]);
+        setAreas((prevAreas: Area[]) => [...prevAreas, newArea]);
         setSelectedAreaId(newArea.id); // Select the new area
       } else {
         setError("Partial scan did not return a new block.");

@@ -7,7 +7,7 @@ export interface AreaStyle {
   fontWeight: 'normal' | 'bold';
   fontStyle: 'normal' | 'italic';
   fontFamily: string;
-  textDecoration: 'none' | 'underline' | 'line-through';
+  textDecoration: 'none' | 'underline' | 'line-through' | 'overline'; // Added 'overline'
   textAlign: 'left' | 'center' | 'right' | 'justify';
   // writingMode?: 'horizontal-tb' | 'vertical-rl' | 'vertical-lr';
 }

@@ -3,33 +3,10 @@
 import React from 'react';
 import { useEditorContext } from '@/contexts/EditorContext';
 import { Download } from 'lucide-react';
-
-// Helper function to trigger file download
-const downloadFile = (filename: string, content: string, mimeType: string) => {
-  const element = document.createElement('a');
-  element.setAttribute('href', `${mimeType},${encodeURIComponent(content)}`);
-  element.setAttribute('download', filename);
-  element.style.display = 'none';
-  document.body.appendChild(element);
-  element.click();
-  document.body.removeChild(element);
-};
-
-const downloadBlob = (filename: string, blob: Blob) => {
-  const element = document.createElement('a');
-  const url = URL.createObjectURL(blob);
-  element.setAttribute('href', url);
-  element.setAttribute('download', filename);
-  element.style.display = 'none';
-  document.body.appendChild(element);
-  element.click();
-  document.body.removeChild(element);
-  URL.revokeObjectURL(url);
-};
-
+import { downloadFile, downloadBlob } from '@/lib/downloadUtils'; // Import from new utility file
 
 const ExportPro: React.FC = () => {
-  const { areas, backgroundImageUrl, originalImageFile, triggerJPGExport } = useEditorContext();
+  const { areas, originalImageFile, triggerJPGExport } = useEditorContext(); // backgroundImageUrl not needed directly here
 
   const handleExportJSON = () => {
     if (areas.length === 0) {

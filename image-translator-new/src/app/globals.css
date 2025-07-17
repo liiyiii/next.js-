@@ -1,25 +1,36 @@
-@import "tailwindcss"; /* Tailwind v4 import */
+@import "tailwindcss";
 
-/*
-  In Tailwind v4, @apply might be less common or work differently.
-  Base styles are often handled by Tailwind's preflight included via the import.
-  Custom base styles can still be added if needed.
-  For now, I'll keep the body styles here using standard CSS,
-  assuming Tailwind's preflight will set a good foundation.
-  The custom font and color variables from tailwind.config.ts should still be usable.
-*/
-
+/* Base body styles using standard CSS */
 body {
-  background-color: theme('colors.background'); /* Using theme() for Tailwind v3/v4 compatibility */
-  color: theme('colors.foreground');
-  font-family: theme('fontFamily.sans'); /* This will pick up var(--font-inter) */
+  background-color: #0a0a0a; /* Fallback, theme() is preferred if it works in v4 alpha */
+  color: #e5e5e5;
+  font-family: var(--font-inter), sans-serif;
   min-height: 100vh;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom CSS for animations (inspired by PDF converter and design prompt) */
+/* Base styles can be added here if Tailwind's preflight isn't sufficient */
+
+/* Custom animation classes */
+.animate-fade-in-down {
+  animation: fade-in-down 0.5s ease-out forwards;
+}
+
+.animate-slide-in-up {
+  animation: slide-in-up 0.5s ease-out forwards;
+}
+
+.animation-delay-300 {
+  animation-delay: 0.3s;
+}
+
+.animation-delay-600 {
+  animation-delay: 0.6s;
+}
+
+/* Keyframes for animations */
 @keyframes fade-in-down {
   from {
     opacity: 0;
@@ -40,12 +51,4 @@ body {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-.animate-fade-in-down {
-  animation: fade-in-down 0.5s ease-out forwards;
-}
-
-.animate-slide-in-up {
-  animation: slide-in-up 0.5s ease-out forwards;
 }

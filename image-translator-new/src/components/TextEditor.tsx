@@ -60,8 +60,8 @@ const TextEditor: React.FC = () => {
   };
 
   const updateStyle = (property: keyof AreaStyle, value: any) => {
-    setAreas(prevAreas =>
-      prevAreas.map(area =>
+    setAreas((prevAreas: Area[]) =>  // Typed prevAreas
+      prevAreas.map((area: Area) =>  // Typed area
         area.id === selectedAreaId
           ? { ...area, style: { ...area.style, [property]: value } }
           : area

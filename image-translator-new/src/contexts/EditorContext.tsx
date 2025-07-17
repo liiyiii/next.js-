@@ -1,10 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode, Dispatch, SetStateAction } from 'react';
+import React, { createContext, useContext, useState, ReactNode, Dispatch, SetStateAction, useEffect } from 'react';
+// Removed one Area import, ensure types/index.ts is the source
 import { Area } from '@/types';
-
-import { Area } from '@/types';
-import { useEffect } from 'react'; // Added useEffect
 
 interface EditorContextType {
   areas: Area[];
@@ -27,11 +25,10 @@ interface EditorContextType {
 
 const EditorContext = createContext<EditorContextType | undefined>(undefined);
 
-// Store for fabric canvas instance - outside provider to be a simple ref accessible by context functions
 let fabricInstance: fabric.Canvas | null = null;
 
-export const EditorProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [areasInternal, setAreasInternal] = useState<Area[]>([]); // Renamed internal state
+export const EditorProvider: React.FC<{ children: ReactNode }> = ({ children }: { children: ReactNode }) => { // Typed children
+  const [areasInternal, setAreasInternal] = useState<Area[]>([]);
   const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
   const [backgroundImageUrl, setBackgroundImageUrl] = useState<string | null>(null);
   const [originalImageFile, setOriginalImageFile] = useState<File | null>(null);
@@ -47,7 +44,7 @@ export const EditorProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   // Wrapped setAreas to manage history
   const setAreas = (newAreasOrCallback: SetStateAction<Area[]>, storeInHistory: boolean = true) => {
-    setAreasInternal(currentAreas => {
+    setAreasInternal((currentAreas: Area[]) => { // Typed currentAreas
       const newAreas = typeof newAreasOrCallback === 'function'
         ? newAreasOrCallback(currentAreas)
         : newAreasOrCallback;

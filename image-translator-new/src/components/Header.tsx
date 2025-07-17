@@ -59,7 +59,7 @@ export default function Header() {
               <span className="hidden sm:inline">{currentLang.toUpperCase()}</span>
             </button>
             <div className="absolute right-0 mt-1 w-32 bg-gray-700 border border-gray-600 rounded-md shadow-lg py-1 opacity-0 group-hover:opacity-100 transition-all duration-200 ease-in-out invisible group-hover:visible z-20">
-              {SUPPORTED_LANGUAGES.map(lang => (
+              {SUPPORTED_LANGUAGES.map((lang: string) => ( // Added type for lang
                 currentLang !== lang && (
                   <Link
                     key={lang}

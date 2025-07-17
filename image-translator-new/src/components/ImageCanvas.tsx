@@ -91,7 +91,7 @@ const ImageCanvas: React.FC<ImageCanvasProps> = ({ onNewAreaSelect }) => {
         }
       });
 
-      canvas.on('mouse:move', function (opt) {
+      canvas.on('mouse:move', function (opt) { // opt is passed here
         if (isPanning && canvas.viewportTransform) {
           const e = opt.e;
           const vpt = canvas.viewportTransform;
@@ -100,14 +100,7 @@ const ImageCanvas: React.FC<ImageCanvasProps> = ({ onNewAreaSelect }) => {
           canvas.requestRenderAll();
           lastPosX = e.clientX;
           lastPosY = e.clientY;
-        }
-      });
-      canvas.on('mouse:up', function () {
-        if (isPanning) {
-            if(canvas.viewportTransform) canvas.setViewportTransform(canvas.viewportTransform);
-            isPanning = false;
-            canvas.selection = true;
-        } else if (isDrawingSelection && selectionRect) {
+        } else if (isDrawingSelection && selectionRect) { // Also use opt here for consistency
           const pointer = canvas.getPointer(opt.e);
           let width = pointer.x - startX;
           let height = pointer.y - startY;
@@ -122,13 +115,17 @@ const ImageCanvas: React.FC<ImageCanvasProps> = ({ onNewAreaSelect }) => {
         }
       });
 
-      canvas.on('mouse:up', function(opt) {
+      // This mouse:up handler was duplicated. Removing one.
+      // The one below handles both panning and drawing selection.
+      // canvas.on('mouse:up', function(opt) { // opt is defined here
+      // Corrected mouse:up logic to be a single handler
+      canvas.on('mouse:up', function (opt) { // opt is the event object
         if (isPanning) {
           if (canvas.viewportTransform) canvas.setViewportTransform(canvas.viewportTransform);
           isPanning = false;
-          canvas.selection = true;
+          canvas.selection = true; // Re-enable selection after panning
         } else if (isDrawingSelection && selectionRect) {
-          isDrawingSelection = false;
+          isDrawingSelection = false; // End drawing mode
           const finalWidth = selectionRect.width || 0;
           const finalHeight = selectionRect.height || 0;
 
@@ -164,13 +161,11 @@ const ImageCanvas: React.FC<ImageCanvasProps> = ({ onNewAreaSelect }) => {
       canvas.on('object:modified', (e) => {
         const modifiedObject = e.target;
         if (modifiedObject && modifiedObject.data?.id && modifiedObject.data?.type === 'ocrTextBox') {
-          const areaId = modifiedObject.data.id;
-          // Update the corresponding Area in the context
-          const areaId = modifiedObject.data.id;
+          const areaId = modifiedObject.data.id; // Declare areaId once
           const fabricTextbox = modifiedObject as fabric.Textbox;
 
-          setAreas(prevAreas =>
-            prevAreas.map(area => {
+          setAreas((prevAreas: Area[]) =>
+            prevAreas.map((area: Area) => {
               if (area.id === areaId) {
                 const newWidth = fabricTextbox.getScaledWidth();
                 const newHeight = fabricTextbox.getScaledHeight();
@@ -213,7 +208,7 @@ const ImageCanvas: React.FC<ImageCanvasProps> = ({ onNewAreaSelect }) => {
         const changedObject = e.target as fabric.Textbox;
         if (changedObject && changedObject.data?.id && changedObject.data?.type === 'ocrTextBox') {
           const areaId = changedObject.data.id;
-          setAreas(prevAreas => prevAreas.map(area =>
+          setAreas((prevAreas: Area[]) => prevAreas.map((area: Area) =>  // Typed prevAreas and area
             area.id === areaId
               ? { ...area, translatedString: changedObject.text || '' }
               : area
@@ -235,7 +230,8 @@ const ImageCanvas: React.FC<ImageCanvasProps> = ({ onNewAreaSelect }) => {
     const canvas = fabricCanvasRef.current;
     if (canvas && backgroundImageUrl) {
       fabric.Image.fromURL(backgroundImageUrl, (img) => {
-        canvas.setBackgroundImage(null, canvas.renderAll.bind(canvas)); // Clear previous
+        canvas.backgroundImage = undefined; // Clear previous background
+        canvas.renderAll();
 
         const MAX_CANVAS_WIDTH = 1200;
         const MAX_CANVAS_HEIGHT = 800;
@@ -283,7 +279,8 @@ const ImageCanvas: React.FC<ImageCanvasProps> = ({ onNewAreaSelect }) => {
       }, { crossOrigin: 'anonymous' });
     } else if (canvas) {
       canvas.clear();
-      canvas.setBackgroundImage(null, canvas.renderAll.bind(canvas));
+      canvas.backgroundImage = undefined; // Use undefined to clear background
+      canvas.renderAll();
       if (displaySize.width !== 800 || displaySize.height !== 600) {
           setDisplaySize({ width: 800, height: 600 });
       }
@@ -297,10 +294,10 @@ const ImageCanvas: React.FC<ImageCanvasProps> = ({ onNewAreaSelect }) => {
     const canvas = fabricCanvasRef.current;
     if (canvas) {
       // Simple clear and redraw for areas. More sophisticated diffing could be done.
-      canvas.getObjects().filter(obj => obj.data?.type === 'ocrAreaBox' || obj.data?.type === 'ocrTextBox').forEach(obj => canvas.remove(obj));
+      canvas.getObjects().filter(obj => obj.data?.type === 'ocrAreaBox' || obj.data?.type === 'ocrTextBox').forEach((obj: fabric.Object) => canvas.remove(obj)); // Typed obj
 
       areas.forEach((area: Area) => {
-        const textbox = new fabric.Textbox(area.translatedString || area.sourceString || "Text", {
+        const textboxOptions: fabric.ITextboxOptions = { // Typed options
           left: area.bbox[0],
           top: area.bbox[1],
           width: area.bbox[2] - area.bbox[0],
@@ -311,10 +308,12 @@ const ImageCanvas: React.FC<ImageCanvasProps> = ({ onNewAreaSelect }) => {
           fontFamily: area.style.fontFamily,
           fontWeight: area.style.fontWeight,
           fontStyle: area.style.fontStyle,
-          textAlign: area.style.textAlign,
-          textDecoration: area.style.textDecoration,
+          textAlign: area.style.textAlign as fabric.Textbox["textAlign"],
+          underline: area.style.textDecoration === 'underline',
+          linethrough: area.style.textDecoration === 'line-through',
+          overline: area.style.textDecoration === 'overline', // Added overline for completeness
           // Fabric specific properties for better control if needed:
-          // splitByGrapheme: true, // Better for complex scripts / emojis
+          // splitByGrapheme: true,
           // selectable: true,
           // hasControls: true,
           // lockScalingFlip: true,
@@ -356,10 +355,10 @@ const ImageCanvas: React.FC<ImageCanvasProps> = ({ onNewAreaSelect }) => {
       const activeObject = canvas.getActiveObject();
       if (selectedAreaId) {
         if (activeObject?.data?.id !== selectedAreaId) {
-          const objectToSelect = canvas.getObjects().find(obj => obj.data?.id === selectedAreaId && obj.data?.type === 'ocrTextBox');
+          const objectToSelect = canvas.getObjects().find((obj: fabric.Object) => obj.data?.id === selectedAreaId && obj.data?.type === 'ocrTextBox'); // Typed obj
           if (objectToSelect) {
             canvas.setActiveObject(objectToSelect);
-            // objectToSelect.enterEditing(); // Optionally enter editing mode directly
+            // objectToSelect.enterEditing();
             // objectToSelect.selectAll();
           }
         }

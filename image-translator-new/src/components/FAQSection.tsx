@@ -1,12 +1,13 @@
-import { getTranslationsDictionary } from '@/lib/getTranslationsDictionary';
+'use client'; // Mark as a Client Component
+
+import { useTranslation } from 'react-i18next'; // Use client-side hook
 import { ChevronDown } from 'lucide-react';
 
 interface FAQSectionProps {
-  lang: string;
+  // lang prop is no longer needed
 }
 
-// FaqItem structure - For actual accordion behavior, this would need to be a client component.
-// This server component version will just display the text using <details> for basic toggle.
+// FaqItem can remain a simple display component
 const FaqItem = ({ question, answer }: { question: string; answer: string; }) => (
   <details className="p-4 bg-gray-800 rounded-lg shadow-lg group transition-all duration-300 open:bg-gray-700 open:shadow-brand-purple/30">
     <summary className="font-semibold text-lg cursor-pointer text-brand-green group-open:text-brand-blue list-none flex justify-between items-center">
@@ -21,13 +22,13 @@ const FaqItem = ({ question, answer }: { question: string; answer: string; }) =>
   </details>
 );
 
-export default async function FAQSection({ lang }: FAQSectionProps) {
-  const t = getTranslationsDictionary(lang);
+export default function FAQSection({}: FAQSectionProps) { // Removed lang prop
+  const { t } = useTranslation();
 
   const faqs = [
     {
-      question: t.faqQ1 || "What is NEXUS-IMAGE TRANSLATOR?",
-      answer: (t.faqA1 || "It's a tool that allows you to upload images, automatically detect text, translate it, and then manually refine the translations directly on the image.") + " Our unique '70% AI + 30% Manual' approach ensures high accuracy while giving you full control over the final output with professional-grade editing tools."
+      question: t('faqQ1'),
+      answer: t('faqA1') + " Our unique '70% AI + 30% Manual' approach ensures high accuracy while giving you full control over the final output with professional-grade editing tools."
     },
     {
       question: "What makes this tool different from others like translateimages.com?",
@@ -58,7 +59,7 @@ export default async function FAQSection({ lang }: FAQSectionProps) {
   return (
     <section id="faq" className="py-16 md:py-24 bg-gray-800/30 rounded-lg shadow-xl">
       <div className="container mx-auto px-4 max-w-3xl">
-        <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4 text-brand-green">{t.faqTitle || "Frequently Asked Questions"}</h2>
+        <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4 text-brand-green">{t('faqTitle')}</h2>
         <p className="text-lg sm:text-xl text-gray-400 text-center mb-12">
           Find answers to common questions about our image translation tool.
         </p>

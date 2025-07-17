@@ -68,4 +68,7 @@ if (!i18n.isInitialized) {
     });
 }
 
+export const DEFAULT_LANGUAGE = 'en';
+export const SUPPORTED_LANGUAGES = ['en', 'zh'];
+
 export default i18n;
